@@ -2,8 +2,8 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
-#include <render/shader.h>
+#include "Camera/Camera.h"
+#include "render/shader.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
@@ -11,6 +11,7 @@
 #include <vector>
 #include <iostream>
 #define _USE_MATH_DEFINES
+#include <iomanip>
 #include <math.h>
 
 static GLFWwindow *window;
@@ -21,8 +22,6 @@ static 	bool firstMouse = true;
 int ScreenSizeX;
 int ScreenSizeY;
 
-float deltaTime = 0.0f; // Time between current frame and last frame
-float lastFrame = 0.0f; // Time of last frame
 
 float xpos;
 float ypos;
@@ -30,19 +29,19 @@ float lastX;
 float lastY;
 const float sensitivity = 0.1f;
 
-// OpenGL camera view parameters
-static glm::vec3 eye_center;
-static glm::vec3 lookat(0, 0, 0);
-static glm::vec3 up(0, 1, 0);
 float one_third = 1./3.;
 float two_third = 2./3.;
 
 // View control
 static float viewAzimuth = 0.f;
 static float viewPolar = 0.f;
-static float viewDistance = 10.0f;
-
+static glm::vec3 eye_center = glm::vec3(0,0,0);;
 static float cameraMovementSpeed = 0.f;
+glm::float32 FoV = 45;
+glm::float32 zNear = 0.1f;
+glm::float32 zFar = 1200.0f;
+Camera camera = Camera(eye_center,viewAzimuth,viewPolar,FoV,zNear,zFar,cameraMovementSpeed);
+
 
 static GLuint LoadTextureTileBox(const char *texture_file_path) {
     int w, h, channels;
@@ -359,9 +358,7 @@ int main(void)
 	//window = glfwCreateWindow(ScreenSizeX, ScreenSizeY, "Lab 2", NULL, nullptr);
 	ScreenSizeX = glfwGetVideoMode(glfwGetPrimaryMonitor())->width;
 	ScreenSizeY = glfwGetVideoMode(glfwGetPrimaryMonitor())->height;
-	window =   glfwCreateWindow(ScreenSizeX,
-										ScreenSizeY, "Lab2"
-										, glfwGetPrimaryMonitor()	, nullptr);
+	window =   glfwCreateWindow(1024,768, "Project", nullptr	, nullptr);
 
 	if (window == NULL)
 	{
@@ -397,35 +394,35 @@ int main(void)
 	b.initialize(glm::vec3(0, 0, 0), glm::vec3(500, 500, 500));
     // ---------------------------
 
-	// Camera setup
-	eye_center.x= viewDistance * cos(viewAzimuth)*sin(viewPolar);
-	eye_center.z= viewDistance * sin(viewAzimuth)*sin(viewPolar);
-	eye_center.y = viewDistance * cos(viewPolar);
-	up.y=cos(viewPolar);
+	// Time and frame rate tracking
+	static double lastTime = glfwGetTime();
+	float fTime = 0.0f;			// Time for measuring fps
+	unsigned long frames = 0;
+	float deltaTime = 0.0f; // Time between current frame and last frame
 
-	glm::mat4 viewMatrix, projectionMatrix;
-    glm::float32 FoV = 45;
-	glm::float32 zNear = 0.1f;
-	glm::float32 zFar = 1200.0f;
-	projectionMatrix = glm::perspective(glm::radians(FoV), 4.0f / 3.0f, zNear, zFar);
-	lookat.x=eye_center.x+cos(viewAzimuth)*cos(viewPolar);
-	lookat.y=eye_center.y+sin(viewPolar);
-	lookat.z=eye_center.z+sin(viewAzimuth)*cos(viewPolar);
 	
 	do
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		viewMatrix = glm::lookAt(eye_center, lookat, up);
-		glm::mat4 vp = projectionMatrix * viewMatrix;
-
 		// Render the SkyBox
-		b.render(vp);
+		b.render(camera.get_MVP());
 
-		float currentFrame = glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
-		cameraMovementSpeed = 10000.f*deltaTime;
+		float currentTime = glfwGetTime();
+		deltaTime = currentTime - lastTime;
+		lastTime = currentTime;
+		camera.set_speed(10000.f*deltaTime);
+
+		frames++;
+		fTime += deltaTime;
+		if (fTime > 2.0f) {
+			float fps = frames / fTime;
+			frames = 0;
+			fTime = 0;
+
+			std::stringstream stream;
+			stream << std::fixed << std::setprecision(2) << "Project | Frames per second (FPS): " << fps;
+			glfwSetWindowTitle(window, stream.str().c_str());
+		}
 
 		// Swap buffers
 		glfwPollEvents();
@@ -459,22 +456,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	float sensitivityY = 0.001;
 	xoffset *= sensitivityX;
 	yoffset *= sensitivityY;
-	viewAzimuth += xoffset;
-	viewPolar += yoffset;
-	if(viewPolar > 89.0*3.14/180)
-		viewPolar = 89.0*3.14/180;
-	if(viewPolar < -89.0*3.14/180)
-		viewPolar = -89.0*3.14/180;
-
-	//Modif lookAt
-	//Modif up
-	lookat.x=eye_center.x+cos(viewAzimuth)*cos(viewPolar);
-	lookat.y=eye_center.y+sin(viewPolar);
-	lookat.z=eye_center.z+sin(viewAzimuth)*cos(viewPolar);
-
-	up.x=cos(viewAzimuth)*sin(-viewPolar);
-	up.y=cos(-viewPolar);
-	up.z=sin(viewAzimuth)*sin(-viewPolar);
+	camera.mouse_callback(window, xoffset, yoffset);
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
@@ -483,49 +465,9 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_R && glfwGetKey(window,GLFW_KEY_R) == GLFW_PRESS) {
 		std::cout << "Reset." << std::endl;
 	}
-
-	if (key == GLFW_KEY_SPACE && glfwGetKey(window,GLFW_KEY_SPACE) == GLFW_PRESS)
-	{
-		glm::tvec3<float> move = cameraMovementSpeed * up;
-		lookat += move;
-		eye_center += move;
-	}
-
-	if((key == GLFW_KEY_LEFT_SHIFT && action == GLFW_PRESS)|| glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-	{
-		glm::tvec3<float> move = cameraMovementSpeed * up;
-		lookat -= move;
-		eye_center -= move;
-	}
-
-	if ((key == GLFW_KEY_W && action == GLFW_PRESS)|| glfwGetKey(window,GLFW_KEY_W) == GLFW_PRESS)
-	{
-		glm::tvec3<float> move = cameraMovementSpeed * (lookat - eye_center);
-		lookat += move;
-		eye_center += move;
-	}
-
-	if ((key == GLFW_KEY_S && action == GLFW_PRESS)||glfwGetKey(window,GLFW_KEY_S) == GLFW_PRESS)
-	{
-		glm::tvec3<float> move = cameraMovementSpeed * (lookat - eye_center);
-		lookat -= move;
-		eye_center -= move;
-	}
-
-	if ((key == GLFW_KEY_A && action == GLFW_PRESS)|| glfwGetKey(window,GLFW_KEY_A)== GLFW_PRESS)
-	{
-		glm::tvec3<float> move = cameraMovementSpeed * glm::cross((lookat- eye_center),up);
-		eye_center -= move;
-		lookat -= move;
-	}
-
-	if ((key == GLFW_KEY_D && action == GLFW_PRESS)|| glfwGetKey(window,GLFW_KEY_D)==GLFW_PRESS)
-	{
-		glm::tvec3<float> move = cameraMovementSpeed * glm::cross((lookat- eye_center),up);
-		eye_center += move;
-		lookat += move;
-	}
-
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
+	else {
+		camera.key_callback(window, key, scancode, action, mode);
+	}
 }

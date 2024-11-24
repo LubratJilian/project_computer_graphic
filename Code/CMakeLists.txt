@@ -13,12 +13,14 @@ include_directories(
 	external/glm-0.9.7.1/
 	external/glad-opengl-3.3/include/
 	external/
-		code/
+		code/Camera/
+
 )
 
 add_executable(main
 		code/main.cpp
 		code/render/shader.cpp
+		code/Camera/Camera.cpp
 )
 
 
