@@ -18,6 +18,7 @@ class Camera{
     void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
     void mouse_callback(GLFWwindow* window, double xoffset, double yoffset);
     glm::mat4 get_MVP();
+    glm::vec3 get_position();
 
   private :
     void calculate_vector();

@@ -14,13 +14,14 @@ include_directories(
 	external/glad-opengl-3.3/include/
 	external/
 		code/Camera/
-
+		code/SkyBox/
 )
 
 add_executable(main
 		code/main.cpp
 		code/render/shader.cpp
 		code/Camera/Camera.cpp
+		code/SkyBox/SkyBox.cpp
 )
 
 

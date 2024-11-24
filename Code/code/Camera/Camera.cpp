@@ -56,6 +56,10 @@ glm::mat4 Camera::get_MVP() {
 	return glm::perspective(glm::radians(_FoV), 4.0f / 3.0f, _Near, _Far) * glm::lookAt(_Position, _LookAt, _Up);
 }
 
+glm::vec3 Camera::get_position() {
+	return _Position;
+}
+
 void Camera::key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
 {
 	if ((key == GLFW_KEY_W && action == GLFW_PRESS)|| glfwGetKey(window,GLFW_KEY_W) == GLFW_PRESS)
