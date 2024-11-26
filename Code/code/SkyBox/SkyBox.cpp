@@ -49,7 +49,7 @@ void SkyBox::initialize(glm::vec3 position, glm::vec3 scale, GLuint (*LoadTextur
 
         // TODO: Load a texture
         // --------------------
-		textureID = _TextureLoader("../code/SkyBox.png");
+		textureID = _TextureLoader("../code/Sky2.png");
         // --------------------
 
         // TODO: Get a handle to texture sampler

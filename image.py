@@ -85,7 +85,7 @@ def convertBack(imgIn,imgOut):
 
             outPix[i,j] = (int(round(r)),int(round(g)),int(round(b)))
 
-imgIn = Image.open("texture.jpg")
+imgIn = Image.open("./Code/code/Sky.png")
 inSize = imgIn.size
 i1 = inSize[0]
 imgOut = Image.new("RGB",(inSize[0],int(inSize[0]*3/4)),"black")
@@ -93,5 +93,5 @@ convertBack(imgIn,imgOut)
 imgOut = np.array(imgOut)
 imgOut = np.flip(imgOut, axis=1)
 imgOut = Image.fromarray(imgOut)
-imgOut.save("Model 1.png".split('.')[0]+"Out2.png")
+imgOut.save("Sky2.png")
 imgOut.show()
