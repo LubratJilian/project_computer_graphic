@@ -117,10 +117,6 @@ int main(void)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-	// TODO: Create more SkyBoxs
-    // ---------------------------
-    // --------------------------
-
 	// Time and frame rate tracking
 	static double lastTime = glfwGetTime();
 	float fTime = 0.0f;			// Time for measuring fps

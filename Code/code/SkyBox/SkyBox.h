@@ -64,41 +64,43 @@ class SkyBox{
 	};
 
 	GLfloat color_buffer_data[72] = {
-		// Front, red
-		1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
+		// Front
+		0.4f, 0.7f, 1.f,
+		0.2f, 0.5f, 1.f,
+		0.2f, 0.5f, 1.f,
+		0.4f, 0.7f, 1.f,
 
-		// Back, yellow
-		1.0f, 1.0f, 0.0f,
-		1.0f, 1.0f, 0.0f,
-		1.0f, 1.0f, 0.0f,
-		1.0f, 1.0f, 0.0f,
+		// Back
+		0.4f, 0.7f, 1.f,
+		0.2f, 0.5f, 1.f,
+		0.2f, 0.5f, 1.f,
+		0.4f, 0.7f, 1.f,
 
-		// Left, green
-		0.0f, 1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
+		// Left
+		0.4f, 0.7f, 1.f,
+		0.2f, 0.5f, 1.f,
+		0.2f, 0.5f, 1.f,
+		0.4f, 0.7f, 1.f,
 
-		// Right, cyan
-		0.0f, 1.0f, 1.0f,
-		0.0f, 1.0f, 1.0f,
-		0.0f, 1.0f, 1.0f,
-		0.0f, 1.0f, 1.0f,
+		// Right
+		0.4f, 0.7f, 1.f,
+		0.2f, 0.5f, 1.f,
+		0.2f, 0.5f, 1.f,
+		0.4f, 0.7f, 1.f,
 
-		// Top, blue
-		0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.0f,
+		// Top
+		0.2f, 0.5f, 1.f,
+		0.2f, 0.5f, 1.f,
+		0.2f, 0.5f, 1.f,
+		0.2f, 0.5f, 1.f,
 
-		// Bottom, magenta
-		1.0f, 0.0f, 1.0f,
-		1.0f, 0.0f, 1.0f,
-		1.0f, 0.0f, 1.0f,
-		1.0f, 0.0f, 1.0f,
+		// Bottom
+		0.4f, 0.7f, 1.f,
+		0.4f, 0.7f, 1.f,
+		0.4f, 0.7f, 1.f,
+		0.4f, 0.7f, 1.f,
+
+
 	};
 
 	GLuint index_buffer_data[36] = {		// 12 triangle faces of a box
