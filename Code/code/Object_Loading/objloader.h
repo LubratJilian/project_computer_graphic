@@ -21,6 +21,8 @@ class Object{
 public:
 	void initialize(glm::vec3 position, glm::vec3 scale, GLuint (*LoadTextureTileBox)(const char *texture_file_path));
 	void render(glm::mat4 cameraMatrix);
+	glm::vec3 get_position();
+	void set_scale(glm::vec3 scale);
 
 private:
 	GLuint (*_TextureLoader)(const char *texture_file_path);
@@ -42,6 +44,7 @@ private:
 	std::vector<glm::vec2> uvs;
 	std::vector<glm::vec3> normals;
 	glm::vec3 _Scale;
+	glm::vec3 _Position;
 };
 
 #endif

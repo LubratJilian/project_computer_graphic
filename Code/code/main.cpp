@@ -39,9 +39,9 @@ static float viewAzimuth = 0.f;
 static float viewPolar = 0.f;
 static glm::vec3 eye_center = glm::vec3(500,0,500);;
 static float cameraMovementSpeed = 0.f;
-glm::float32 FoV = 45;
+glm::float32 FoV = 60;
 glm::float32 zNear = 0.1f;
-glm::float32 zFar = 10000.0f;
+glm::float32 zFar = 6000.0f;
 Camera camera = Camera(eye_center,viewAzimuth,viewPolar,FoV,zNear,zFar,cameraMovementSpeed);
 SkyBox b;
 
@@ -122,21 +122,30 @@ int main(void)
 	float fTime = 0.0f;			// Time for measuring fps
 	unsigned long frames = 0;
 	float deltaTime = 0.0f; // Time between current frame and last frame
-	b.initialize(camera.get_position(), glm::vec3(1000, 1000, 1000), &LoadTextureTileBox);
+	b.initialize(camera.get_position(), glm::vec3(3000, 3000, 3000), &LoadTextureTileBox);
 	Object o;
-	o.initialize(camera.get_position(), glm::vec3(100, 100, 100), &LoadTextureTileBox);
+	o.initialize(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.), &LoadTextureTileBox); //glm::vec3(150, 150, 150)
 	
 	do
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// Render the SkyBox
 		b.render(camera.get_MVP());
+
+		float dist= length(abs(o.get_position()-camera.get_position()));
+		if(dist<500) {
+			o.set_scale(glm::vec3(100,100,100));
+		}
+		else if(dist>=500) {
+			o.set_scale(max(glm::vec3(450-0.5*dist,450-0.5*dist,450-0.5*dist),glm::vec3(0.f,0.f,0.f)));
+		}
+
 		o.render(camera.get_MVP());
 
 		float currentTime = glfwGetTime();
 		deltaTime = currentTime - lastTime;
 		lastTime = currentTime;
-		camera.set_speed(10000.f*deltaTime);
+		camera.set_speed(100.f*deltaTime);
 
 		frames++;
 		fTime += deltaTime;

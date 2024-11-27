@@ -102,6 +102,7 @@ bool loadOBJ(
 
 void Object::initialize(glm::vec3 position, glm::vec3 scale, GLuint (*LoadTextureTileBox)(const char *texture_file_path)) {
 	_Scale = scale;
+	_Position = position;
 
 	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
@@ -141,7 +142,7 @@ void Object::render(glm::mat4 cameraMatrix) {
 
 	// Send our transformation to the currently bound shader,
 	// in the "MVP" uniform
-	glm::mat4 modelMatrix = glm::mat4();
+	glm::mat4 modelMatrix = glm::mat4(1.);
 	// Scale the box along each axis to make it look like a SkyBox
 	modelMatrix = glm::scale(modelMatrix, _Scale);
 	// -----------------------
@@ -188,3 +189,13 @@ void Object::render(glm::mat4 cameraMatrix) {
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 }
+
+
+glm::vec3 Object::get_position() {
+	return _Position;
+}
+
+void Object::set_scale(glm::vec3 scale) {
+	_Scale = scale;
+}
+
