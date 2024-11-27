@@ -56,7 +56,7 @@ void SkyBox::initialize(glm::vec3 position, glm::vec3 scale, GLuint (*LoadTextur
 	}
 
 void SkyBox::move(glm::vec3 position) {
-	_Translation = position-_Position;
+	//_Translation = position-_Position;
 	/*for(int i=0;i<24;i++) {
 		color_buffer_data[3*i] = color_buffer_data[3*i] - 0.01f;
 		color_buffer_data[3*i+1] = color_buffer_data[3*i+1] - 0.01f;

@@ -10,11 +10,11 @@
 
 #include <vector>
 #include <iostream>
-
 #define _USE_MATH_DEFINES
 #include <iomanip>
 #include <math.h>
 #include <SkyBox.h>
+#include <objloader.h>
 
 
 static GLFWwindow *window;
@@ -37,11 +37,11 @@ float two_third = 2./3.;
 // View control
 static float viewAzimuth = 0.f;
 static float viewPolar = 0.f;
-static glm::vec3 eye_center = glm::vec3(0,0,0);;
+static glm::vec3 eye_center = glm::vec3(500,0,500);;
 static float cameraMovementSpeed = 0.f;
-glm::float32 FoV = 60;
-glm::float32 zNear = 10.f;
-glm::float32 zFar = 5000.0f;
+glm::float32 FoV = 45;
+glm::float32 zNear = 0.1f;
+glm::float32 zFar = 10000.0f;
 Camera camera = Camera(eye_center,viewAzimuth,viewPolar,FoV,zNear,zFar,cameraMovementSpeed);
 SkyBox b;
 
@@ -123,13 +123,15 @@ int main(void)
 	unsigned long frames = 0;
 	float deltaTime = 0.0f; // Time between current frame and last frame
 	b.initialize(camera.get_position(), glm::vec3(1000, 1000, 1000), &LoadTextureTileBox);
-
+	Object o;
+	o.initialize(camera.get_position(), glm::vec3(100, 100, 100), &LoadTextureTileBox);
 	
 	do
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// Render the SkyBox
 		b.render(camera.get_MVP());
+		o.render(camera.get_MVP());
 
 		float currentTime = glfwGetTime();
 		deltaTime = currentTime - lastTime;

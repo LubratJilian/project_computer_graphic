@@ -12,9 +12,12 @@ include_directories(
 	external/glfw-3.1.2/include/
 	external/glm-0.9.7.1/
 	external/glad-opengl-3.3/include/
+
 	external/
-		code/Camera/
-		code/SkyBox/
+	code/Camera/
+	code/SkyBox/
+	code/Object_Loading/
+
 )
 
 add_executable(main
@@ -22,6 +25,7 @@ add_executable(main
 		code/render/shader.cpp
 		code/Camera/Camera.cpp
 		code/SkyBox/SkyBox.cpp
+		code/Object_Loading/objloader.cpp
 )
 
 

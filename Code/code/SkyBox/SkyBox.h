@@ -1,3 +1,4 @@
+#ifndef SKYBOX_H
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -5,8 +6,6 @@
 #include<iostream>
 #include "../render/shader.h"
 
-
-#ifndef SKYBOX_H
 #define SKYBOX_H
 
 class SkyBox{
