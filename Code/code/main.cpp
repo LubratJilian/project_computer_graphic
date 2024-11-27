@@ -2,19 +2,18 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "Camera/Camera.h"
-#include "render/shader.h"
-
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
 
 #include <vector>
 #include <iostream>
-#define _USE_MATH_DEFINES
 #include <iomanip>
+#define _USE_MATH_DEFINES
 #include <math.h>
+
+#include "render/shader.h"
+#include "Camera/Camera.h"
 #include <SkyBox.h>
 #include <objloader.h>
+#include <TextureLoader.h>
 
 
 static GLFWwindow *window;
@@ -44,30 +43,9 @@ glm::float32 zNear = 0.1f;
 glm::float32 zFar = 6000.0f;
 Camera camera = Camera(eye_center,viewAzimuth,viewPolar,FoV,zNear,zFar,cameraMovementSpeed);
 SkyBox b;
+TextureLoader textureLoader;
 
-static GLuint LoadTextureTileBox(const char *texture_file_path) {
-	int w, h, channels;
-	uint8_t* img = stbi_load(texture_file_path, &w, &h, &channels, 3);
-	GLuint texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
 
-	// To tile textures on a box, we set wrapping to repeat
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	if (img) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, img);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	} else {
-		std::cout << "Failed to load texture " << texture_file_path << std::endl;
-	}
-	stbi_image_free(img);
-
-	return texture;
-}
 
 int main(void)
 {
@@ -122,10 +100,11 @@ int main(void)
 	float fTime = 0.0f;			// Time for measuring fps
 	unsigned long frames = 0;
 	float deltaTime = 0.0f; // Time between current frame and last frame
-	b.initialize(camera.get_position(), glm::vec3(3000, 3000, 3000), &LoadTextureTileBox);
+	b.initialize(camera.get_position(), glm::vec3(3000, 3000, 3000),textureLoader);
 	Object o;
-	o.initialize(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.), &LoadTextureTileBox); //glm::vec3(150, 150, 150)
-	
+
+	o.initialize(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader); //glm::vec3(150, 150, 150)
+
 	do
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -1,3 +1,4 @@
+#include <TextureLoader.h>
 #ifndef SKYBOX_H
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
@@ -6,17 +7,17 @@
 #include<iostream>
 #include "../render/shader.h"
 
+
 #define SKYBOX_H
 
 class SkyBox{
   public:
-	void initialize(glm::vec3 position, glm::vec3 scale, GLuint (*LoadTextureTileBox)(const char *texture_file_path));
+	void initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader);
 	void move(glm::vec3 position);
     void render(glm::mat4 cameraMatrix);
     void cleanup();
     
   private:
-	GLuint (*_TextureLoader)(const char *texture_file_path);
     glm::vec3 _Position;		// Position of the box
 	glm::vec3 _Scale;		// Size of the box in each axis
 	glm::vec3 _Translation;

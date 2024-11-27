@@ -1,14 +1,15 @@
-#pragma once
-
 #ifndef OBJLOADER_H
+
+
+#define OBJLOADER_H
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include<iostream>
+#include <TextureLoader.h>
+#include<vector>
 #include "../render/shader.h"
-
-#define OBJLOADER_H
 
 bool loadOBJ(
 	const char * path, 
@@ -19,14 +20,12 @@ bool loadOBJ(
 
 class Object{
 public:
-	void initialize(glm::vec3 position, glm::vec3 scale, GLuint (*LoadTextureTileBox)(const char *texture_file_path));
+	void initialize(glm::vec3 position, glm::vec3 scale, TextureLoader textureLoader);
 	void render(glm::mat4 cameraMatrix);
 	glm::vec3 get_position();
 	void set_scale(glm::vec3 scale);
 
 private:
-	GLuint (*_TextureLoader)(const char *texture_file_path);
-
 	// OpenGL buffers
 	GLuint vertexArrayID;
 	GLuint vertexBufferID;

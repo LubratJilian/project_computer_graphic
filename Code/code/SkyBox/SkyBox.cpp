@@ -1,11 +1,9 @@
 #include "SkyBox.h"
 
-
-void SkyBox::initialize(glm::vec3 position, glm::vec3 scale, GLuint (*LoadTextureTileBox)(const char *texture_file_path)) {
+void SkyBox::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader) {
 		// Define scale of the SkyBox geometry
 		_Position = position;
 		_Scale = scale;
-		_TextureLoader =LoadTextureTileBox;
 		_Translation = glm::vec3(0,0,0);
 
 		// Create a vertex array object
@@ -46,7 +44,7 @@ void SkyBox::initialize(glm::vec3 position, glm::vec3 scale, GLuint (*LoadTextur
 
         // TODO: Load a texture
         // --------------------
-		textureID = _TextureLoader("../code/Sky2.png");
+		//textureID = textureLoader.LoadTextureTileBox("../code/Sky2.png");
         // --------------------
 
         // TODO: Get a handle to texture sampler

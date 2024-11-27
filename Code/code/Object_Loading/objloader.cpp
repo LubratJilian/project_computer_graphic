@@ -1,10 +1,3 @@
-#include <vector>
-#include <stdio.h>
-#include <string>
-#include <cstring>
-
-#include <glm/glm.hpp>
-
 #include "objloader.h"
 
 
@@ -100,7 +93,7 @@ bool loadOBJ(
 }
 
 
-void Object::initialize(glm::vec3 position, glm::vec3 scale, GLuint (*LoadTextureTileBox)(const char *texture_file_path)) {
+void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader) {
 	_Scale = scale;
 	_Position = position;
 
@@ -115,13 +108,13 @@ void Object::initialize(glm::vec3 position, glm::vec3 scale, GLuint (*LoadTextur
 	mvpMatrixID = glGetUniformLocation(programID2, "MVP");
 
 	// Load the texture
-	//textureID = _TextureLoader("D:/Documents/Etudes/Polytech/2024-2025/Trinity college/CSU44052 - COMPUTER GRAPHICS/OpenGL-tutorial-master/OpenGL-tutorial-master/tutorial07_model_loading/Crystals.png");
+	textureID = textureLoader.LoadTextureTileBox("../code/Textures/Crystals.png");
 
 	// Get a handle for our "myTextureSampler" uniform
 	textureSamplerID  = glGetUniformLocation(programID2, "myTextureSampler");
 
 	// Read our .obj file
-	bool res = loadOBJ("D:/Documents/Etudes/Polytech/2024-2025/Trinity college/CSU44052 - COMPUTER GRAPHICS/OpenGL-tutorial-master/OpenGL-tutorial-master/tutorial07_model_loading/project.obj", vertices, uvs, normals);
+	bool res = loadOBJ("../code/Objects/project.obj", vertices, uvs, normals);
 
 	// Load it into a VBO
 

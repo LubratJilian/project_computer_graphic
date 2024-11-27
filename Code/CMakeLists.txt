@@ -17,6 +17,8 @@ include_directories(
 	code/Camera/
 	code/SkyBox/
 	code/Object_Loading/
+		code/Textures/
+
 
 )
 
@@ -26,6 +28,7 @@ add_executable(main
 		code/Camera/Camera.cpp
 		code/SkyBox/SkyBox.cpp
 		code/Object_Loading/objloader.cpp
+		code/Textures/TextureLoader.cpp
 )
 
 
