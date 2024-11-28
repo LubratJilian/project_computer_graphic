@@ -147,8 +147,7 @@ int main(void)
 
 	// Clean up
 	b.cleanup();
-
-	// Close OpenGL window and terminate GLFW
+	o.cleanup();
 	glfwTerminate();
 
 	return 0;

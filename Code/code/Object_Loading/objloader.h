@@ -1,6 +1,5 @@
 #ifndef OBJLOADER_H
 
-
 #define OBJLOADER_H
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
@@ -24,6 +23,7 @@ public:
 	void render(glm::mat4 cameraMatrix);
 	glm::vec3 get_position();
 	void set_scale(glm::vec3 scale);
+	void cleanup();
 
 private:
 	// OpenGL buffers

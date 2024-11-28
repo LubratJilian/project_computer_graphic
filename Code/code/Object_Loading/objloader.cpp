@@ -29,8 +29,6 @@ bool loadOBJ(
 		if (res == EOF)
 			break; // EOF = End Of File. Quit the loop.
 
-		// else : parse lineHeader
-		
 		if ( strcmp( lineHeader, "v" ) == 0 ){
 			glm::vec3 vertex;
 			fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
@@ -62,27 +60,22 @@ bool loadOBJ(
 			normalIndices.push_back(normalIndex[1]);
 			normalIndices.push_back(normalIndex[2]);
 		}else{
-			// Probably a comment, eat up the rest of the line
 			char stupidBuffer[1000];
 			fgets(stupidBuffer, 1000, file);
 		}
 
 	}
 
-	// For each vertex of each triangle
 	for( unsigned int i=0; i<vertexIndices.size(); i++ ){
 
-		// Get the indices of its attributes
 		unsigned int vertexIndex = vertexIndices[i];
 		unsigned int uvIndex = uvIndices[i];
 		unsigned int normalIndex = normalIndices[i];
 		
-		// Get the attributes thanks to the index
 		glm::vec3 vertex = temp_vertices[ vertexIndex-1 ];
 		glm::vec2 uv = temp_uvs[ uvIndex-1 ];
 		glm::vec3 normal = temp_normals[ normalIndex-1 ];
 		
-		// Put the attributes in buffers
 		out_vertices.push_back(vertex);
 		out_uvs     .push_back(uv);
 		out_normals .push_back(normal);
@@ -101,22 +94,18 @@ void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
 
-	// Create and compile our GLSL program from the shaders
 	programID2 = LoadShadersFromFile("../code/Object_Loading/ObjectLoading.vert", "../code/Object_Loading/ObjectLoading.frag");
 
-	// Get a handle for our "MVP" uniform
 	mvpMatrixID = glGetUniformLocation(programID2, "MVP");
 
-	// Load the texture
 	textureID = textureLoader.LoadTextureTileBox("../code/Textures/Crystals.png");
 
-	// Get a handle for our "myTextureSampler" uniform
 	textureSamplerID  = glGetUniformLocation(programID2, "myTextureSampler");
 
-	// Read our .obj file
 	bool res = loadOBJ("../code/Objects/project.obj", vertices, uvs, normals);
-
-	// Load it into a VBO
+	if(!res) {
+		std::cout<<"Error during the object import"<<std::endl;
+	}
 
 	glGenBuffers(1, &vertexBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
@@ -129,30 +118,17 @@ void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 
 
 void Object::render(glm::mat4 cameraMatrix) {
-
-	// Use our shader
 	glUseProgram(programID2);
-
-	// Send our transformation to the currently bound shader,
-	// in the "MVP" uniform
 	glm::mat4 modelMatrix = glm::mat4(1.);
-	// Scale the box along each axis to make it look like a SkyBox
 	modelMatrix = glm::scale(modelMatrix, _Scale);
-	// -----------------------
-
-
-	// Set model-view-projection matrix
 	glm::mat4 mvp = cameraMatrix * modelMatrix;
 
 	glUniformMatrix4fv(mvpMatrixID, 1, GL_FALSE, &mvp[0][0]);
 
-	// Bind our texture in Texture Unit 0
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textureID);
-	// Set our "myTextureSampler" sampler to user Texture Unit 0
 	glUniform1i(textureSamplerID, 0);
 
-	// 1rst attribute buffer : vertices
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
 	glVertexAttribPointer(
@@ -164,7 +140,6 @@ void Object::render(glm::mat4 cameraMatrix) {
 		(void*)0            // array buffer offset
 	);
 
-	// 2nd attribute buffer : UVs
 	glEnableVertexAttribArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, uvBufferID);
 	glVertexAttribPointer(
@@ -176,7 +151,6 @@ void Object::render(glm::mat4 cameraMatrix) {
 		(void*)0                          // array buffer offset
 	);
 
-	// Draw the triangle !
 	glDrawArrays(GL_TRIANGLES, 0, vertices.size() );
 
 	glDisableVertexAttribArray(0);
@@ -192,3 +166,12 @@ void Object::set_scale(glm::vec3 scale) {
 	_Scale = scale;
 }
 
+void Object::cleanup() {
+	glDeleteBuffers(1, &vertexBufferID);
+	glDeleteBuffers(1, &colorBufferID);
+	glDeleteBuffers(1, &indexBufferID);
+	glDeleteVertexArrays(1, &vertexArrayID);
+	glDeleteBuffers(1, &uvBufferID);
+	glDeleteTextures(1, &textureID);
+	glDeleteProgram(programID);
+}

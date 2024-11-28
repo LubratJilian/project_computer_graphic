@@ -42,12 +42,10 @@ void SkyBox::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 		// Get a handle for our "MVP" uniform
 		mvpMatrixID = glGetUniformLocation(programID, "MVP");
 
-        // TODO: Load a texture
         // --------------------
 		//textureID = textureLoader.LoadTextureTileBox("../code/Sky2.png");
         // --------------------
 
-        // TODO: Get a handle to texture sampler
         // -------------------------------------
 		textureSamplerID = glGetUniformLocation(programID,"textureSampler");
         // -------------------------------------

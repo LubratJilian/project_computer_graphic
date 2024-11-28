@@ -1,14 +1,13 @@
-#include <TextureLoader.h>
 #ifndef SKYBOX_H
+#define SKYBOX_H
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include<iostream>
 #include "../render/shader.h"
+#include <TextureLoader.h>
 
-
-#define SKYBOX_H
 
 class SkyBox{
   public:

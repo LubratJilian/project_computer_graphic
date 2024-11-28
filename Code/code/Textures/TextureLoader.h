@@ -1,8 +1,5 @@
 #ifndef TEXTURELOADER_H
 
-
-
-
 #define TEXTURELOADER_H
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
