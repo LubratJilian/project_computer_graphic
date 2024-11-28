@@ -13,8 +13,8 @@
 #include "Camera/Camera.h"
 #include <SkyBox.h>
 #include <objloader.h>
+#include"Bot.h"
 #include <TextureLoader.h>
-//#include"Bot.h"
 
 
 static GLFWwindow *window;
@@ -106,8 +106,8 @@ int main(void)
 
 	o.initialize(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader); //glm::vec3(150, 150, 150)
 
-	//Bot bot;
-	//bot.initialize();
+	Bot bot;
+	bot.initialize();
 
 	do
 	{
@@ -142,6 +142,11 @@ int main(void)
 			glfwSetWindowTitle(window, stream.str().c_str());
 		}
 
+		bot.update(currentTime);
+		bot.render(camera.get_MVP());
+
+
+
 		// Swap buffers
 		glfwPollEvents();
 		glfwSwapBuffers(window);
@@ -152,6 +157,7 @@ int main(void)
 	// Clean up
 	b.cleanup();
 	o.cleanup();
+	bot.cleanup();
 	glfwTerminate();
 
 	return 0;

@@ -1,5 +1,7 @@
 #include"Bot.h"
-
+#define TINYGLTF_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <../external/tinygltf-2.9.3/tiny_gltf.h>
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 static glm::vec3 lightIntensity(5e6f, 5e6f, 5e6f);
@@ -329,7 +331,7 @@ bool Bot::loadModel(tinygltf::Model &model, const char *filename) {
 
 void Bot::initialize() {
 	// Modify your path if needed
-	if (!loadModel(model, "../lab4/model/bot/test222.gltf")) {
+	if (!loadModel(model, "../code/Animation/Bot/bot.gltf")) {
 		return;
 	}
 
@@ -343,7 +345,7 @@ void Bot::initialize() {
 	animationObjects = prepareAnimation(model);
 
 	// Create and compile our GLSL program from the shaders
-	programID = LoadShadersFromFile("../lab4/shader/bot.vert", "../lab4/shader/bot.frag");
+	programID = LoadShadersFromFile("../code/Animation/Bot/bot.vert", "../code/Animation/Bot/bot.frag");
 	if (programID == 0)
 	{
 		std::cerr << "Failed to load shaders." << std::endl;
@@ -427,7 +429,8 @@ void Bot::bindMesh(std::vector<PrimitiveObject> &primitiveObjects,
 		primitiveObject.vbos = vbos;
 		primitiveObjects.push_back(primitiveObject);
 
-		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 }
 
@@ -477,8 +480,8 @@ void Bot::drawMesh(const std::vector<PrimitiveObject> &primitiveObjects,
 					indexAccessor.componentType,
 					BUFFER_OFFSET(indexAccessor.byteOffset));
 
-		glBindVertexArray(0);
-	}
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);	}
 }
 
 void Bot::drawModelNodes(const std::vector<PrimitiveObject>& primitiveObjects,
