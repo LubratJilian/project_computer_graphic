@@ -94,13 +94,13 @@ void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
 
-	programID2 = LoadShadersFromFile("../code/Object_Loading/ObjectLoading.vert", "../code/Object_Loading/ObjectLoading.frag");
+	programID = LoadShadersFromFile("../code/Object_Loading/ObjectLoading.vert", "../code/Object_Loading/ObjectLoading.frag");
 
-	mvpMatrixID = glGetUniformLocation(programID2, "MVP");
+	mvpMatrixID = glGetUniformLocation(programID, "MVP");
 
 	textureID = textureLoader.LoadTextureTileBox("../code/Textures/Crystals.png");
 
-	textureSamplerID  = glGetUniformLocation(programID2, "myTextureSampler");
+	textureSamplerID  = glGetUniformLocation(programID, "myTextureSampler");
 
 	bool res = loadOBJ("../code/Objects/project.obj", vertices, uvs, normals);
 	if(!res) {
@@ -118,7 +118,7 @@ void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 
 
 void Object::render(glm::mat4 cameraMatrix) {
-	glUseProgram(programID2);
+	glUseProgram(programID);
 	glm::mat4 modelMatrix = glm::mat4(1.);
 	modelMatrix = glm::scale(modelMatrix, _Scale);
 	glm::mat4 mvp = cameraMatrix * modelMatrix;

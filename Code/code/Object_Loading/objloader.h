@@ -37,7 +37,7 @@ private:
 	// Shader variable IDs
 	GLuint mvpMatrixID;
 	GLuint textureSamplerID;
-	GLuint programID2;
+	GLuint programID;
 
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec2> uvs;
