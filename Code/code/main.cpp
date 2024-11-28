@@ -14,6 +14,7 @@
 #include <SkyBox.h>
 #include <objloader.h>
 #include <TextureLoader.h>
+//#include"Bot.h"
 
 
 static GLFWwindow *window;
@@ -104,6 +105,9 @@ int main(void)
 	Object o;
 
 	o.initialize(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader); //glm::vec3(150, 150, 150)
+
+	//Bot bot;
+	//bot.initialize();
 
 	do
 	{
