@@ -20,6 +20,7 @@ class SkyBox{
     glm::vec3 _Position;		// Position of the box
 	glm::vec3 _Scale;		// Size of the box in each axis
 	glm::vec3 _Translation;
+	GLuint Vao;
 
 	GLfloat vertex_buffer_data[72] = {	// Vertex definition for a canonical box
 		// Front face

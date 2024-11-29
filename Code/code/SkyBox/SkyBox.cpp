@@ -6,6 +6,8 @@ void SkyBox::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 		_Scale = scale;
 		_Translation = glm::vec3(0,0,0);
 
+		glGenVertexArrays(1, &Vao);
+		glBindVertexArray(Vao);
 		// Create a vertex array object
 		glGenVertexArrays(1, &vertexArrayID);
 		glBindVertexArray(vertexArrayID);
@@ -49,6 +51,8 @@ void SkyBox::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
         // -------------------------------------
 		textureSamplerID = glGetUniformLocation(programID,"textureSampler");
         // -------------------------------------
+		glBindVertexArray(0);
+
 	}
 
 void SkyBox::move(glm::vec3 position) {
@@ -64,6 +68,9 @@ void SkyBox::move(glm::vec3 position) {
 
 void SkyBox::render(glm::mat4 cameraMatrix) {
 	glUseProgram(programID);
+
+	glGenVertexArrays(1, &Vao);
+	glBindVertexArray(Vao);
 
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
@@ -112,6 +119,8 @@ void SkyBox::render(glm::mat4 cameraMatrix) {
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
+	glBindVertexArray(0);
+
 }
 
 void SkyBox::cleanup() {

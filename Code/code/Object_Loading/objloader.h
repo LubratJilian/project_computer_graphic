@@ -33,6 +33,7 @@ private:
 	GLuint colorBufferID;
 	GLuint uvBufferID;
 	GLuint textureID;
+	GLuint Vao;
 
 	// Shader variable IDs
 	GLuint mvpMatrixID;

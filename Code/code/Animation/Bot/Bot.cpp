@@ -431,6 +431,7 @@ void Bot::bindMesh(std::vector<PrimitiveObject> &primitiveObjects,
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
 	}
 }
 
@@ -480,8 +481,10 @@ void Bot::drawMesh(const std::vector<PrimitiveObject> &primitiveObjects,
 					indexAccessor.componentType,
 					BUFFER_OFFSET(indexAccessor.byteOffset));
 
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);	}
+		glBindVertexArray(0);
+	}
 }
 
 void Bot::drawModelNodes(const std::vector<PrimitiveObject>& primitiveObjects,

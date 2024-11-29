@@ -113,7 +113,6 @@ int main(void)
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// Render the SkyBox
-		b.render(camera.get_MVP());
 
 		float dist= length(abs(o.get_position()-camera.get_position()));
 		if(dist<500) {
@@ -123,7 +122,6 @@ int main(void)
 			o.set_scale(max(glm::vec3(450-0.5*dist,450-0.5*dist,450-0.5*dist),glm::vec3(0.f,0.f,0.f)));
 		}
 
-		o.render(camera.get_MVP());
 
 		float currentTime = glfwGetTime();
 		deltaTime = currentTime - lastTime;
@@ -144,7 +142,9 @@ int main(void)
 
 		bot.update(currentTime);
 		bot.render(camera.get_MVP());
+		o.render(camera.get_MVP());
 
+		b.render(camera.get_MVP());
 
 
 		// Swap buffers

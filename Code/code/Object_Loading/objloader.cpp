@@ -107,6 +107,9 @@ void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 		std::cout<<"Error during the object import"<<std::endl;
 	}
 
+	glGenVertexArrays(1, &Vao);
+	glBindVertexArray(Vao);
+
 	glGenBuffers(1, &vertexBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
@@ -114,10 +117,14 @@ void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 	glGenBuffers(1, &uvBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, uvBufferID);
 	glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
+	glBindVertexArray(0);
+
 	}
 
 
 void Object::render(glm::mat4 cameraMatrix) {
+	glBindVertexArray(Vao);
+
 	glUseProgram(programID);
 	glm::mat4 modelMatrix = glm::mat4(1.);
 	modelMatrix = glm::scale(modelMatrix, _Scale);
@@ -155,6 +162,8 @@ void Object::render(glm::mat4 cameraMatrix) {
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
+	glBindVertexArray(0);
+
 }
 
 
