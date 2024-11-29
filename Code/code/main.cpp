@@ -15,7 +15,8 @@
 #include <objloader.h>
 #include"Bot.h"
 #include <TextureLoader.h>
-
+#include<Lights.h>
+#include<tinygltf-2.9.3/stb_image_write.h>
 
 static GLFWwindow *window;
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -42,11 +43,10 @@ static float cameraMovementSpeed = 0.f;
 glm::float32 FoV = 60;
 glm::float32 zNear = 0.1f;
 glm::float32 zFar = 6000.0f;
+
 Camera camera = Camera(eye_center,viewAzimuth,viewPolar,FoV,zNear,zFar,cameraMovementSpeed);
-SkyBox b;
+SkyBox skybox;
 TextureLoader textureLoader;
-
-
 
 int main(void)
 {
@@ -63,10 +63,9 @@ int main(void)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	//window = glfwCreateWindow(ScreenSizeX, ScreenSizeY, "Lab 2", NULL, nullptr);
-	ScreenSizeX = glfwGetVideoMode(glfwGetPrimaryMonitor())->width;
-	ScreenSizeY = glfwGetVideoMode(glfwGetPrimaryMonitor())->height;
-	window =   glfwCreateWindow(1024,768, "Project", nullptr	, nullptr);
+	int Screen_sizeX = 1024;
+	int Screen_sizeY = 768;
+	window =   glfwCreateWindow(Screen_sizeX,Screen_sizeY, "Project", nullptr	, nullptr);
 
 	if (window == NULL)
 	{
@@ -92,7 +91,6 @@ int main(void)
 
 	// Background
 	glClearColor(0.2f, 0.2f, 0.25f, 0.0f);
-
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
@@ -101,14 +99,16 @@ int main(void)
 	float fTime = 0.0f;			// Time for measuring fps
 	unsigned long frames = 0;
 	float deltaTime = 0.0f; // Time between current frame and last frame
-	b.initialize(camera.get_position(), glm::vec3(3000, 3000, 3000),textureLoader);
+
+	skybox.initialize(camera.get_position(), glm::vec3(3000, 3000, 3000),textureLoader);
+
 	Object o;
-
 	o.initialize(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader); //glm::vec3(150, 150, 150)
-
 	Bot bot;
 	bot.initialize();
-
+	Light l1= Light(glm::vec3(300,300,300),glm::vec3(0.7,0.7,0.7),10,60,200,800,SUN);
+	Lights lights = Lights(Screen_sizeX,Screen_sizeY,{l1});
+	std::vector<light> lights_vector = lights.convert_lights();
 	do
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -141,10 +141,34 @@ int main(void)
 		}
 
 		bot.update(currentTime);
+
+		glBindFramebuffer(GL_FRAMEBUFFER,lights.get_Fbo());
+		glViewport(0, 0, Screen_sizeX, Screen_sizeY);
+		int i = 0;
+		for(Light& light : lights.get_lights()) {
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, lights.get_shadows(), 0, i);
+			glClear(GL_DEPTH_BUFFER_BIT);
+			//bot.render(light.get_lightVP(glm::vec3(0,0,0),glm::vec3(0,1,0)));
+			o.render(light.get_lightVP(glm::vec3(0,0,0),glm::vec3(0,1,0)));
+			i++;
+			switch(light.get_type()) {
+				case SUN:
+					glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, lights.get_shadows(), 0, i);
+					glClear(GL_DEPTH_BUFFER_BIT);
+					o.render(light.get_lightVP(light.get_pos()*2.f,glm::vec3(0,1,0)));
+					//bot.render(light.get_lightVP(glm::vec3(500,500,500),glm::vec3(0,1,0)));
+					break;
+			}
+
+
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER,0);
+		glViewport(0,0,Screen_sizeX,Screen_sizeY);
+
 		bot.render(camera.get_MVP());
 		o.render(camera.get_MVP());
-
-		b.render(camera.get_MVP());
+		skybox.render(camera.get_MVP());
 
 
 		// Swap buffers
@@ -155,7 +179,7 @@ int main(void)
 	while (!glfwWindowShouldClose(window));
 
 	// Clean up
-	b.cleanup();
+	skybox.cleanup();
 	o.cleanup();
 	bot.cleanup();
 	glfwTerminate();
@@ -192,6 +216,6 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 		glfwSetWindowShouldClose(window, GL_TRUE);
 	else {
 		camera.key_callback(window, key, scancode, action, mode);
-		b.move(camera.get_position());
+		skybox.move(camera.get_position());
 	}
 }
