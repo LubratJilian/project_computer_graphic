@@ -43,6 +43,8 @@ void SkyBox::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 
 		// Get a handle for our "MVP" uniform
 		mvpMatrixID = glGetUniformLocation(programID, "MVP");
+		ModelMatrixID = glGetUniformLocation(programID, "ModelMatrix");
+		LayerId = glGetUniformLocation(programID, "Layer");
 
         // --------------------
 		//textureID = textureLoader.LoadTextureTileBox("../code/Sky2.png");
@@ -50,6 +52,9 @@ void SkyBox::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 
         // -------------------------------------
 		textureSamplerID = glGetUniformLocation(programID,"textureSampler");
+
+		Texture3DSizeID= glGetUniformLocation(programID,"texture3DSize");
+
         // -------------------------------------
 		glBindVertexArray(0);
 
@@ -66,7 +71,7 @@ void SkyBox::move(glm::vec3 position) {
 }
 
 
-void SkyBox::render(glm::mat4 cameraMatrix) {
+void SkyBox::render(glm::mat4 cameraMatrix, int voxel_scene_size, int k) {
 	glUseProgram(programID);
 
 	glGenVertexArrays(1, &Vao);
@@ -95,8 +100,12 @@ void SkyBox::render(glm::mat4 cameraMatrix) {
 
 
 	// Set model-view-projection matrix
-	glm::mat4 mvp = cameraMatrix * modelMatrix;
+	glm::mat4 mvp = cameraMatrix;
 	glUniformMatrix4fv(mvpMatrixID, 1, GL_FALSE, &mvp[0][0]);
+	glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &modelMatrix[0][0]);
+	glUniform1i(LayerId,k);
+
+	glUniform1i(Texture3DSizeID,voxel_scene_size);
 
 	// ------------------------------------------
 	glEnableVertexAttribArray(2);

@@ -13,7 +13,7 @@ class SkyBox{
   public:
 	void initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader);
 	void move(glm::vec3 position);
-    void render(glm::mat4 cameraMatrix);
+    void render(glm::mat4 cameraMatrix, int voxel_scene_size, int k);
     void cleanup();
     
   private:
@@ -177,7 +177,10 @@ class SkyBox{
 	// Shader variable IDs
 	GLuint mvpMatrixID;
 	GLuint textureSamplerID;
+	GLuint Texture3DSizeID;
+	GLuint ModelMatrixID;
 	GLuint programID;
+	GLuint LayerId;
 };
 
 #endif //SKYBOX_H

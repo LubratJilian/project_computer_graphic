@@ -1,7 +1,5 @@
 #include"Bot.h"
-#define TINYGLTF_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <../external/tinygltf-2.9.3/tiny_gltf.h>
+
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 static glm::vec3 lightIntensity(5e6f, 5e6f, 5e6f);
@@ -344,6 +342,13 @@ void Bot::initialize() {
 	// Prepare animation data
 	animationObjects = prepareAnimation(model);
 
+	glm::mat4 modelMatrix = {
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+	};
+
 	// Create and compile our GLSL program from the shaders
 	programID = LoadShadersFromFile("../code/Animation/Bot/bot.vert", "../code/Animation/Bot/bot.frag");
 	if (programID == 0)
@@ -356,6 +361,9 @@ void Bot::initialize() {
 	lightPositionID = glGetUniformLocation(programID, "lightPosition");
 	lightIntensityID = glGetUniformLocation(programID, "lightIntensity");
 	jointMatricesID = glGetUniformLocation(programID, "jointMatrices");
+	Texture3DSizeID= glGetUniformLocation(programID,"texture3DSize");
+	ModelMatrixID = glGetUniformLocation(programID, "ModelMatrix");
+	LayerID = glGetUniformLocation(programID, "Layer");
 }
 
 void Bot::bindMesh(std::vector<PrimitiveObject> &primitiveObjects,
@@ -506,12 +514,16 @@ void Bot::drawModel(const std::vector<PrimitiveObject>& primitiveObjects,
 	}
 }
 
-void Bot::render(glm::mat4 cameraMatrix) {
+void Bot::render(glm::mat4 cameraMatrix,int voxel_scene_size, int k) {
 	glUseProgram(programID);
 
 	// Set camera
 	glm::mat4 mvp = cameraMatrix;
 	glUniformMatrix4fv(mvpMatrixID, 1, GL_FALSE, &mvp[0][0]);
+	glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &modelMatrix[0][0]);
+	glUniform1i(Texture3DSizeID,voxel_scene_size);
+
+	glUniform1i(LayerID,k);
 
 	// -----------------------------------------------------------------
 	// TODO: Set animation data for linear blend skinning in shader
@@ -533,3 +545,32 @@ void Bot::cleanup() {
 	glDeleteProgram(programID);
 }
 
+
+
+void Bot::saveTextureFrames(GLuint frame_buffer_3D,GLuint textureID, int depth, std::string baseFilename,int k) {
+	// Prepare buffers to hold a single 2D slice
+	std::vector<unsigned char> frameData(depth * depth * 4);  // RGBA
+	std::vector<unsigned char> imgData(depth * depth * 3);   // RGB for saving
+
+	// Iterate through each depth layer
+	//for (int z = 0; z < depth; ++z) {
+		// Read the pixel data for this specific layer
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textureID, 0, k-1);
+		glReadPixels(0, 0, depth, depth, GL_RGBA, GL_UNSIGNED_BYTE, frameData.data());
+		// Convert RGBA to RGB (drop alpha channel)
+		for (int i = 0; i < depth * depth; ++i) {
+			imgData[3*i]     = frameData[4*i];     // R
+			imgData[3*i+1]   = frameData[4*i+1];   // G
+			imgData[3*i+2]   = frameData[4*i+2];   // B
+		}
+
+		// Create a unique filename for each frame
+		std::string filename = baseFilename + "_frame_" + std::to_string(k) + ".png";
+
+		// Write the image
+		stbi_write_png(filename.c_str(), depth, depth, 3, imgData.data(), depth * 3);
+	//}
+
+	// Unbind the texture
+	glBindTexture(GL_TEXTURE_3D, 0);
+}

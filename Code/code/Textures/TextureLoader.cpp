@@ -1,7 +1,3 @@
-#ifndef STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
-#endif
 #include <TextureLoader.h>
 
 GLuint TextureLoader::LoadTextureTileBox(const char *texture_file_path) {

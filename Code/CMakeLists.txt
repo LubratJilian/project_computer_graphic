@@ -18,7 +18,8 @@ include_directories(
 	code/SkyBox/
 	code/Object_Loading/
 		code/Textures/
-		code/Animation/Bot
+		code/Animation/Bot/
+		code/
 
 
 
@@ -32,6 +33,7 @@ add_executable(main
 		code/Object_Loading/objloader.cpp
 		code/Textures/TextureLoader.cpp
 		code/Animation/Bot/Bot.cpp
+		code/importalacon.cpp
 
 )
 

@@ -13,8 +13,10 @@ Camera::Camera(glm::vec3 position, float azimuth, float polar, float FoV, float 
     _Near = near;
     _Far = far;
 	_CameraMovementSpeed = cameraMovementSpeed;
-	_Up = glm::vec3(0,1,0);
-    calculate_vector();
+	_LookAt = glm::vec3(0.,0.,0.);
+	_Up = glm::vec3(0.,0.,0.);
+	calculate_vector();
+
 }
 
 void Camera::calculate_vector() {

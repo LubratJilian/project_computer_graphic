@@ -5,6 +5,8 @@ in  vec2 uv;
 
 out vec4 finalColor;
 uniform sampler2D textureSampler;
+uniform int texture3DSize;
+
 
 
 void main()

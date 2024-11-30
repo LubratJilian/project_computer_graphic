@@ -3,6 +3,8 @@
 
 
 #include <../external/tinygltf-2.9.3/tiny_gltf.h>
+#include <../external/tinygltf-2.9.3/stb_image_write.h>
+
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -80,8 +82,9 @@ class Bot{
     void drawMesh(const std::vector<PrimitiveObject> &primitiveObjects,tinygltf::Model &model, tinygltf::Mesh &mesh);
     void drawModelNodes(const std::vector<PrimitiveObject>& primitiveObjects,tinygltf::Model &model, tinygltf::Node &node);
     void drawModel(const std::vector<PrimitiveObject>& primitiveObjects,			tinygltf::Model &model);
-    void render(glm::mat4 cameraMatrix);
+    void render(glm::mat4 cameraMatrix, int voxel_scene_size, int k);
     void cleanup();
+    void saveTextureFrames(GLuint frame_buffer_3D, GLuint textureID, int depth, std::string baseFilename,int k);
 
     private:
 
@@ -90,6 +93,10 @@ class Bot{
     GLuint lightPositionID;
     GLuint lightIntensityID;
     GLuint programID;
+    GLuint Texture3DSizeID;
+    GLuint ModelMatrixID;
+    GLuint LayerID;
+    glm::mat4 modelMatrix;
 
     tinygltf::Model model;
 

@@ -2,7 +2,6 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
 #include <vector>
 #include <iostream>
 #include <iomanip>
@@ -16,14 +15,13 @@
 #include"Bot.h"
 #include <TextureLoader.h>
 
-
 static GLFWwindow *window;
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
 static void mouse_callback(GLFWwindow *window, double xpos, double ypos);
-static 	bool firstMouse = true;
+static 	bool firstMouse = false;
 
-int ScreenSizeX;
-int ScreenSizeY;
+int ScreenSizeX = 1024;
+int ScreenSizeY = 768;
 
 float xpos;
 float ypos;
@@ -35,18 +33,65 @@ float one_third = 1./3.;
 float two_third = 2./3.;
 
 // View control
-static float viewAzimuth = 0.f;
+static float viewAzimuth = 2.5f;
 static float viewPolar = 0.f;
 static glm::vec3 eye_center = glm::vec3(500,0,500);;
 static float cameraMovementSpeed = 0.f;
 glm::float32 FoV = 60;
 glm::float32 zNear = 0.1f;
 glm::float32 zFar = 6000.0f;
+
 Camera camera = Camera(eye_center,viewAzimuth,viewPolar,FoV,zNear,zFar,cameraMovementSpeed);
 SkyBox b;
+
 TextureLoader textureLoader;
 
+GLuint voxelTexture;
+GLuint frame_buffer_3D;
+int voxel_scene_size = 128;
 
+static bool saveDepth = true;
+
+Bot save;
+
+ void initialize_FBO() {
+ 	glGenFramebuffers(1, &frame_buffer_3D);
+
+ 	glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_3D);
+
+ 	glGenTextures(1, &voxelTexture);
+ 	glBindTexture(GL_TEXTURE_2D_ARRAY, voxelTexture);
+
+ 	// Allocate 3D texture with proper parameters
+ 	glTexImage3D(GL_TEXTURE_2D_ARRAY,
+		 0,                // level
+		 GL_RGBA8,         // Internal format (sized format for color)
+		 voxel_scene_size, voxel_scene_size, voxel_scene_size, // width, height, depth
+		 0,                // border
+		 GL_RGBA,          // format
+		 GL_UNSIGNED_BYTE, // type
+		 nullptr);         // initial data (null)
+
+ 	// Set texture parameters
+ 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+ 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+ 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+ 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+
+    //glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, voxelTexture, 0);
+ 	GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+ 	glDrawBuffers(1, drawBuffers);
+ 	glReadBuffer(GL_NONE);
+
+ 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+ 		std::cerr << "Error: Shadow framebuffer is not complete!" << std::endl;
+ 	}
+ 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+// This function retrieves and stores the depth map of the default frame buffer
+// or a particular frame buffer (indicated by FBO ID) to a PNG image.
 
 int main(void)
 {
@@ -63,10 +108,10 @@ int main(void)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	//window = glfwCreateWindow(ScreenSizeX, ScreenSizeY, "Lab 2", NULL, nullptr);
-	ScreenSizeX = glfwGetVideoMode(glfwGetPrimaryMonitor())->width;
-	ScreenSizeY = glfwGetVideoMode(glfwGetPrimaryMonitor())->height;
-	window =   glfwCreateWindow(1024,768, "Project", nullptr	, nullptr);
+	window = glfwCreateWindow(ScreenSizeX, ScreenSizeY, "Project", NULL, nullptr);
+	//ScreenSizeX = glfwGetVideoMode(glfwGetPrimaryMonitor())->width;
+	//ScreenSizeY = glfwGetVideoMode(glfwGetPrimaryMonitor())->height;
+	//window =   glfwCreateWindow(1024,768, "Project", nullptr	, nullptr);
 
 	if (window == NULL)
 	{
@@ -95,6 +140,7 @@ int main(void)
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
+	glEnable(GL_TEXTURE_3D);
 
 	// Time and frame rate tracking
 	static double lastTime = glfwGetTime();
@@ -108,6 +154,10 @@ int main(void)
 
 	Bot bot;
 	bot.initialize();
+
+	//initialize_FBO();
+ 	glm::mat4 orthoProjection = glm::ortho(-100.f, 100.f, -100.f, 100.f, -100.f, 100.f);
+ 	GLubyte* sliceData = new GLubyte[voxel_scene_size * voxel_scene_size * 4]; // RGBA data per slice
 
 	do
 	{
@@ -139,12 +189,44 @@ int main(void)
 			stream << std::fixed << std::setprecision(2) << "Project | Frames per second (FPS): " << fps;
 			glfwSetWindowTitle(window, stream.str().c_str());
 		}
-
 		bot.update(currentTime);
-		bot.render(camera.get_MVP());
-		o.render(camera.get_MVP());
 
-		b.render(camera.get_MVP());
+		if(saveDepth) {
+			glBindFramebuffer(GL_FRAMEBUFFER,frame_buffer_3D);
+			glBindTexture(GL_TEXTURE_3D, voxelTexture);
+
+			glViewport(0,0,voxel_scene_size,voxel_scene_size);
+			//voxelTexture
+			for(int k=0;k<voxel_scene_size; ++k) {
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+				glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, voxelTexture, 0, k);
+
+				o.render(camera.get_MVP(),voxel_scene_size,k,orthoProjection);
+				glReadPixels(0, 0, voxel_scene_size, voxel_scene_size, GL_RGBA, GL_UNSIGNED_BYTE, sliceData);
+				std::stringstream filename;
+				filename << "frame_" << k << ".png";
+				stbi_write_png(filename.str().c_str(), voxel_scene_size, voxel_scene_size, 4, sliceData, voxel_scene_size * 4);
+				//glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, voxelTexture, 0, k);
+
+				//save.saveTextureFrames(frame_buffer_3D,voxelTexture, voxel_scene_size, "niquetoi",k);
+
+				//bot.render(camera.get_MVP(),voxel_scene_size,k);
+				//b.render(camera.get_MVP(),voxel_scene_size,k);
+				// Optional: Debug by filling with a specific color
+
+
+			}
+			saveDepth = false;
+		}
+		glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
+
+		glBindFramebuffer(GL_FRAMEBUFFER,0);
+		glViewport(0,0,ScreenSizeX,ScreenSizeX);
+
+		bot.render(camera.get_MVP(),0,0);
+		o.render(camera.get_MVP(),0,0, glm::mat4(0.));
+		b.render(camera.get_MVP(),0,0);
 
 
 		// Swap buffers
@@ -184,7 +266,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
 {
-	std::cout<<cameraMovementSpeed<<std::endl;
 	if (key == GLFW_KEY_R && glfwGetKey(window,GLFW_KEY_R) == GLFW_PRESS) {
 		std::cout << "Reset." << std::endl;
 	}

@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include<iostream>
+#include <../external/tinygltf-2.9.3/stb_image.h>
 
 class TextureLoader{
 public:

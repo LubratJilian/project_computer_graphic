@@ -7,9 +7,12 @@ out vec3 finalColor;
 
 uniform vec3 lightPosition;
 uniform vec3 lightIntensity;
+uniform int texture3DSize;
+
 
 void main()
 {
+
 	// Lighting
 	vec3 lightDir = lightPosition - worldPosition;
 	float lightDist = dot(lightDir, lightDir);
