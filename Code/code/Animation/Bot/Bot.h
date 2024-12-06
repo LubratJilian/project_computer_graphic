@@ -84,7 +84,6 @@ class Bot{
     void drawModel(const std::vector<PrimitiveObject>& primitiveObjects,			tinygltf::Model &model);
     void render(glm::mat4 cameraMatrix, int voxel_scene_size, int k);
     void cleanup();
-    void saveTextureFrames(GLuint frame_buffer_3D, GLuint textureID, int depth, std::string baseFilename,int k);
 
     private:
 

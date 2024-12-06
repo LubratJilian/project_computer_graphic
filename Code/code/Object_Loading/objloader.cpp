@@ -103,11 +103,16 @@ void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 	projectionID= glGetUniformLocation(programID,"projection");
 
 	LayerID= glGetUniformLocation(programID,"Layer");
-
+	SideID= glGetUniformLocation(programID,"Side");
 
 	textureID = textureLoader.LoadTextureTileBox("../code/Textures/Crystals.png");
 
 	textureSamplerID  = glGetUniformLocation(programID, "myTextureSampler");
+	texture3DID  = glGetUniformLocation(programID, "voxelTexture");
+	cameraposId  = glGetUniformLocation(programID, "viewPos");
+
+
+
 
 	bool res = loadOBJ("../code/Objects/project.obj", vertices, uvs, normals);
 	if(!res) {
@@ -124,12 +129,16 @@ void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 	glGenBuffers(1, &uvBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, uvBufferID);
 	glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
+
+	glGenBuffers(1, &normalBufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, normalBufferID);
+	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
 	glBindVertexArray(0);
 
 	}
 
 
-void Object::render(glm::mat4 cameraMatrix, int voxel_scene_size, int k, 	glm::mat4 orthoProjection) {
+void Object::render(glm::mat4 cameraMatrix, int voxel_scene_size, int k,glm::mat4 orthoProjection,int side,GLuint texture3D, glm::vec3 cameraPos) {
 	glBindVertexArray(Vao);
 
 	glUseProgram(programID);
@@ -139,15 +148,60 @@ void Object::render(glm::mat4 cameraMatrix, int voxel_scene_size, int k, 	glm::m
 	glUniformMatrix4fv(mvpMatrixID, 1, GL_FALSE, &cameraMatrix[0][0]);
 	glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &modelMatrix[0][0]);
 	glUniformMatrix4fv(projectionID, 1, GL_FALSE, &orthoProjection[0][0]);
+	glUniform3f(cameraposId, cameraPos[0], cameraPos[1], cameraPos[2]);
 
 
 	glUniform1i(Texture3DSizeID,voxel_scene_size);
 	glUniform1i(LayerID,k);
+	glUniform1i(SideID,side);
+
+	GLuint ubo;
+	glGenBuffers(1, &ubo);
+	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(PointLight[1]), NULL, GL_STATIC_DRAW);
+	PointLight lightData[1] = { glm::vec3(200.0f, 200.0f, 200.0f), glm::vec3(1.0f, 1.0f, 1.0f) };
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PointLight), &lightData[0]);
+	GLuint positionID = glGetUniformBlockIndex(programID, "pointLights");
+	glUniformBlockBinding(programID, positionID, 0);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
+
+	GLuint ubo21;
+	glGenBuffers(1, &ubo21);
+	glBindBuffer(GL_UNIFORM_BUFFER, ubo21);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(Material), NULL, GL_STATIC_DRAW);
+	Material material = {
+		glm::vec3(1.f,0.f,0.5f),
+		0.5f,
+		glm::vec3(1.f,0.f,0.5f),
+		0.5f, // "Reflective and refractive" specular diffusion.
+		0.5f,
+		0, // Emissive materials uses diffuse color as emissive color.
+		1.f,
+		0.f
+	};;
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Material), &material);
+	GLuint materialID = glGetUniformBlockIndex(programID, "material");
+	glUniformBlockBinding(programID, materialID, 0);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo21);
+
+	GLuint ubo22;
+	glGenBuffers(1, &ubo22);
+	glBindBuffer(GL_UNIFORM_BUFFER, ubo22);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(Settings), NULL, GL_STATIC_DRAW);
+	Settings settings = {true,true, true,true};
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Settings), &settings);
+	GLuint settingsID = glGetUniformBlockIndex(programID, "settings");
+	glUniformBlockBinding(programID, settingsID, 0);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo22);
 
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	glUniform1i(textureSamplerID, 0);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_3D, texture3D);
+	glUniform1i(texture3DID, 1);
 
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
@@ -170,6 +224,18 @@ void Object::render(glm::mat4 cameraMatrix, int voxel_scene_size, int k, 	glm::m
 		0,                                // stride
 		(void*)0                          // array buffer offset
 	);
+
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, normalBufferID);
+	glVertexAttribPointer(
+		2,                                // attribute
+		3,                                // size
+		GL_FLOAT,                         // type
+		GL_FALSE,                         // normalized?
+		0,                                // stride
+		(void*)0                          // array buffer offset
+	);
+
 
 	glDrawArrays(GL_TRIANGLES, 0, vertices.size() );
 
@@ -196,4 +262,17 @@ void Object::cleanup() {
 	glDeleteBuffers(1, &uvBufferID);
 	glDeleteTextures(1, &textureID);
 	glDeleteProgram(programID);
+}
+
+std::vector<glm::vec3> Object::get_AABB() {
+	glm::vec3 minPoint(FLT_MAX); // Initialize with large values
+	glm::vec3 maxPoint(-FLT_MAX); // Initialize with small values
+	for(glm::vec3 &vec : vertices) {
+		minPoint = glm::min(minPoint, vec);
+		maxPoint = glm::max(maxPoint, vec);
+	}
+	std::vector<glm::vec3> res;
+	res.push_back(minPoint);
+	res.push_back(maxPoint);
+	return res;
 }

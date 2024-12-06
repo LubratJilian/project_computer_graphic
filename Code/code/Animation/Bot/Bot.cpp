@@ -544,33 +544,3 @@ void Bot::render(glm::mat4 cameraMatrix,int voxel_scene_size, int k) {
 void Bot::cleanup() {
 	glDeleteProgram(programID);
 }
-
-
-
-void Bot::saveTextureFrames(GLuint frame_buffer_3D,GLuint textureID, int depth, std::string baseFilename,int k) {
-	// Prepare buffers to hold a single 2D slice
-	std::vector<unsigned char> frameData(depth * depth * 4);  // RGBA
-	std::vector<unsigned char> imgData(depth * depth * 3);   // RGB for saving
-
-	// Iterate through each depth layer
-	//for (int z = 0; z < depth; ++z) {
-		// Read the pixel data for this specific layer
-		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textureID, 0, k-1);
-		glReadPixels(0, 0, depth, depth, GL_RGBA, GL_UNSIGNED_BYTE, frameData.data());
-		// Convert RGBA to RGB (drop alpha channel)
-		for (int i = 0; i < depth * depth; ++i) {
-			imgData[3*i]     = frameData[4*i];     // R
-			imgData[3*i+1]   = frameData[4*i+1];   // G
-			imgData[3*i+2]   = frameData[4*i+2];   // B
-		}
-
-		// Create a unique filename for each frame
-		std::string filename = baseFilename + "_frame_" + std::to_string(k) + ".png";
-
-		// Write the image
-		stbi_write_png(filename.c_str(), depth, depth, 3, imgData.data(), depth * 3);
-	//}
-
-	// Unbind the texture
-	glBindTexture(GL_TEXTURE_3D, 0);
-}

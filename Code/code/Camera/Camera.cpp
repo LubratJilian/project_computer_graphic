@@ -12,6 +12,7 @@ Camera::Camera(glm::vec3 position, float azimuth, float polar, float FoV, float 
     _FoV = FoV;
     _Near = near;
     _Far = far;
+	_Speed = 100.f;
 	_CameraMovementSpeed = cameraMovementSpeed;
 	_LookAt = glm::vec3(0.,0.,0.);
 	_Up = glm::vec3(0.,0.,0.);
@@ -50,9 +51,22 @@ void Camera::set_up(glm::vec3 up) {
     _Up = up;
 }
 
-void Camera::set_speed(float cameraMovementSpeed) {
-    _CameraMovementSpeed = cameraMovementSpeed;
+void Camera::set_speed(float time) {
+    _CameraMovementSpeed = _Speed*time;
 }
+
+void Camera::set_speedMultiply(float speed) {
+	 _Speed = speed;
+}
+
+float Camera::get_speedMultiply() {
+	return _Speed;
+}
+
+void Camera::set_FoV(float FoV) {
+	_FoV = FoV;
+}
+
 
 glm::mat4 Camera::get_MVP() {
 	return glm::perspective(glm::radians(_FoV), 4.0f / 3.0f, _Near, _Far) * glm::lookAt(_Position, _LookAt, _Up);
@@ -60,6 +74,10 @@ glm::mat4 Camera::get_MVP() {
 
 glm::vec3 Camera::get_position() {
 	return _Position;
+}
+
+float Camera::get_FoV() {
+	return _FoV;
 }
 
 void Camera::key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)

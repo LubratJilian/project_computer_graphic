@@ -15,16 +15,21 @@ class Camera{
     void set_position(glm::vec3 position);
     void set_up(glm::vec3 up);
     void set_speed(float cameraMovementSpeed);
+    void set_FoV(float FoV);
     void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
     void mouse_callback(GLFWwindow* window, double xoffset, double yoffset);
     glm::mat4 get_MVP();
     glm::vec3 get_position();
+    float get_FoV();
+    void set_speedMultiply(float speed);
+    float get_speedMultiply();
 
   private :
     void calculate_vector();
     glm::vec3 _Position;
     glm::vec3 _LookAt;
     glm::vec3 _Up;
+    float _Speed;
     float _Azimuth;
     float _Polar;
     float _FoV;
