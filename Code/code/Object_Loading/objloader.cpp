@@ -102,6 +102,13 @@ void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 
 	textureSamplerID  = glGetUniformLocation(programID, "myTextureSampler");
 
+	blockIndex = glGetUniformBlockIndex(programID, "lights");
+	if (blockIndex == GL_INVALID_INDEX) {
+		std::cerr << "Error: Uniform block 'lights' not found!" << std::endl;
+		return;
+	}
+
+
 	bool res = loadOBJ("../code/Objects/project.obj", vertices, uvs, normals);
 	if(!res) {
 		std::cout<<"Error during the object import"<<std::endl;
@@ -122,7 +129,7 @@ void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 	}
 
 
-void Object::render(glm::mat4 cameraMatrix) {
+void Object::render(glm::mat4 cameraMatrix, Lights lights) {
 	glBindVertexArray(Vao);
 
 	glUseProgram(programID);
@@ -157,6 +164,10 @@ void Object::render(glm::mat4 cameraMatrix) {
 		0,                                // stride
 		(void*)0                          // array buffer offset
 	);
+
+	glBindBuffer(GL_UNIFORM_BUFFER, lights.get_UBO());
+	glUniformBlockBinding(programID, blockIndex, 0);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, lights.get_UBO());
 
 	glDrawArrays(GL_TRIANGLES, 0, vertices.size() );
 

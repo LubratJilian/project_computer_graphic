@@ -13,11 +13,11 @@ enum Light_Type {
     PROJECTOR = 1
 };
 
-struct  struct_light {
-    glm::vec3 position;
-    glm::vec3 color;
-    int type;
-    float intensity;
+struct struct_light {
+    alignas(16) glm::vec3 position;
+    alignas(16) glm::vec3 color;
+    alignas(4) int type;
+    alignas(4) float intensity;   // add alignas 12 if needed on an empty section
 };
 typedef struct struct_light light;
 
@@ -44,6 +44,8 @@ class Lights{
     std::vector<Light> lights;
     GLuint shadows;
     GLuint FBO;
+    GLuint UBO;
+    light converted_lights[10];
 public:
     Lights(int width, int height, int number_lights);
     Lights(int width, int height, std::vector<Light> lights);
@@ -51,7 +53,9 @@ public:
     std::vector<Light> get_lights();
     GLuint get_Fbo();
     GLuint get_shadows();
-    std::vector<light> convert_lights();
+    void convert_lights();
+    void put_data_buffer();
+    GLuint get_UBO();
 };
 
 #endif

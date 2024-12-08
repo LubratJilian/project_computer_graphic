@@ -1,6 +1,7 @@
 #include<Lights.h>
 
 Lights::Lights(int width, int height, int number_lights) {
+    glGenBuffers(1, &UBO);
     glGenFramebuffers(1, &FBO);
 
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
@@ -27,9 +28,8 @@ Lights::Lights(int width, int height, int number_lights) {
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, 0);
 
-
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, shadows, 0);
-    glDrawBuffer(GL_DEPTH_ATTACHMENT);
+    //glDrawBuffer(GL_DEPTH_ATTACHMENT);
     /*glReadBuffer(GL_NONE);*/
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -88,12 +88,15 @@ glm::vec3 Light::get_pos() {
     return position;
 }
 
-std::vector<light> Lights::convert_lights() {
-    std::vector<light> res;
-    for(Light &light : lights) {
-        res.push_back(light.convert_light());
+void Lights::convert_lights() {
+    for(int i=0;i<10;i++){
+        if(lights.size()<=i) {
+            converted_lights[i] = {glm::vec3(0,0,0),glm::vec3(0,0,0),0,0};
+        }
+        else {
+            converted_lights[i] = lights[i].convert_light();
+        }
     }
-    return res;
 }
 
 light Light::convert_light() {
@@ -101,3 +104,13 @@ light Light::convert_light() {
     return l;
 }
 
+void Lights::put_data_buffer() {
+    glBindBuffer(GL_UNIFORM_BUFFER, UBO);
+    convert_lights();
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(light)*10, NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(light)*10, &converted_lights);
+}
+
+GLuint Lights::get_UBO() {
+    return UBO;
+}

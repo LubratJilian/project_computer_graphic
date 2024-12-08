@@ -106,9 +106,10 @@ int main(void)
 	o.initialize(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader); //glm::vec3(150, 150, 150)
 	Bot bot;
 	bot.initialize();
-	Light l1= Light(glm::vec3(300,300,300),glm::vec3(0.7,0.7,0.7),10,60,200,800,SUN);
+
+	Light l1= Light(glm::vec3(300,300,300),glm::vec3(1,0.,0.),10,60,200,800,SUN);
 	Lights lights = Lights(Screen_sizeX,Screen_sizeY,{l1});
-	std::vector<light> lights_vector = lights.convert_lights();
+	lights.put_data_buffer();
 	do
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -145,29 +146,28 @@ int main(void)
 		glBindFramebuffer(GL_FRAMEBUFFER,lights.get_Fbo());
 		glViewport(0, 0, Screen_sizeX, Screen_sizeY);
 		int i = 0;
+
 		for(Light& light : lights.get_lights()) {
 			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, lights.get_shadows(), 0, i);
 			glClear(GL_DEPTH_BUFFER_BIT);
 			//bot.render(light.get_lightVP(glm::vec3(0,0,0),glm::vec3(0,1,0)));
-			o.render(light.get_lightVP(glm::vec3(0,0,0),glm::vec3(0,1,0)));
+			o.render(light.get_lightVP(glm::vec3(0,0,0),glm::vec3(0,1,0)),lights);
 			i++;
 			switch(light.get_type()) {
 				case SUN:
 					glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, lights.get_shadows(), 0, i);
 					glClear(GL_DEPTH_BUFFER_BIT);
-					o.render(light.get_lightVP(light.get_pos()*2.f,glm::vec3(0,1,0)));
+					o.render(light.get_lightVP(light.get_pos()*2.f,glm::vec3(0,1,0)),lights);
 					//bot.render(light.get_lightVP(glm::vec3(500,500,500),glm::vec3(0,1,0)));
 					break;
 			}
-
-
 		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
 		glViewport(0,0,Screen_sizeX,Screen_sizeY);
 
 		bot.render(camera.get_MVP());
-		o.render(camera.get_MVP());
+		o.render(camera.get_MVP(),lights);
 		skybox.render(camera.get_MVP());
 
 

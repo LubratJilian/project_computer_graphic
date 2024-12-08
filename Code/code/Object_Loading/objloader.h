@@ -9,6 +9,7 @@
 #include <TextureLoader.h>
 #include<vector>
 #include "../render/shader.h"
+#include<Lights.h>
 
 bool loadOBJ(
 	const char * path, 
@@ -20,7 +21,7 @@ bool loadOBJ(
 class Object{
 public:
 	void initialize(glm::vec3 position, glm::vec3 scale, TextureLoader textureLoader);
-	void render(glm::mat4 cameraMatrix);
+	void render(glm::mat4 cameraMatrix, Lights lights);
 	glm::vec3 get_position();
 	void set_scale(glm::vec3 scale);
 	void cleanup();
@@ -34,6 +35,7 @@ private:
 	GLuint uvBufferID;
 	GLuint textureID;
 	GLuint Vao;
+	GLuint blockIndex;
 
 	// Shader variable IDs
 	GLuint mvpMatrixID;
