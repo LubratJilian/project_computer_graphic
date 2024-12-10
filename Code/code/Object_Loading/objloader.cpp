@@ -102,6 +102,14 @@ void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 
 	textureSamplerID  = glGetUniformLocation(programID, "myTextureSampler");
 
+	textureSampler3DID  = glGetUniformLocation(programID, "shadows");
+
+	ModelID = glGetUniformLocation(programID, "model");
+	CameraPositionID = glGetUniformLocation(programID, "cameraPosition");
+	nbLightID = glGetUniformLocation(programID, "numberLights");
+
+
+
 	blockIndex = glGetUniformBlockIndex(programID, "lights");
 	if (blockIndex == GL_INVALID_INDEX) {
 		std::cerr << "Error: Uniform block 'lights' not found!" << std::endl;
@@ -124,24 +132,39 @@ void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 	glGenBuffers(1, &uvBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, uvBufferID);
 	glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
-	glBindVertexArray(0);
 
+	glGenBuffers(1, &normalsID);
+	glBindBuffer(GL_ARRAY_BUFFER, normalsID);
+	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
+	glBindVertexArray(0);
 	}
 
 
-void Object::render(glm::mat4 cameraMatrix, Lights lights) {
+void Object::render(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights lights) {
 	glBindVertexArray(Vao);
 
 	glUseProgram(programID);
 	glm::mat4 modelMatrix = glm::mat4(1.);
 	modelMatrix = glm::scale(modelMatrix, _Scale);
-	glm::mat4 mvp = cameraMatrix * modelMatrix;
 
-	glUniformMatrix4fv(mvpMatrixID, 1, GL_FALSE, &mvp[0][0]);
+
+	glUniformMatrix4fv(mvpMatrixID, 1, GL_FALSE, &projectionMatrix[0][0]);
+
+	glUniformMatrix4fv(ModelID, 1, GL_FALSE, &modelMatrix[0][0]);
+
+	glUniform3fv(CameraPositionID, 1, &cameraPosition[0]);
+
+	glUniform1i(nbLightID, lights.get_lights().size());
+
+
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	glUniform1i(textureSamplerID, 0);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, lights.get_shadows());
+	glUniform1i(textureSampler3DID, 1);
 
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
@@ -165,18 +188,26 @@ void Object::render(glm::mat4 cameraMatrix, Lights lights) {
 		(void*)0                          // array buffer offset
 	);
 
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, normalsID);
+	glVertexAttribPointer(
+		2,                                // attribute
+		3,                                // size
+		GL_FLOAT,                         // type
+		GL_FALSE,                         // normalized?
+		0,                                // stride
+		(void*)0                          // array buffer offset
+	);
+
 	glBindBuffer(GL_UNIFORM_BUFFER, lights.get_UBO());
 	glUniformBlockBinding(programID, blockIndex, 0);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, lights.get_UBO());
-
 	glDrawArrays(GL_TRIANGLES, 0, vertices.size() );
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 	glBindVertexArray(0);
-
 }
-
 
 glm::vec3 Object::get_position() {
 	return _Position;

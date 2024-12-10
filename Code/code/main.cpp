@@ -38,7 +38,7 @@ float two_third = 2./3.;
 // View control
 static float viewAzimuth = 0.f;
 static float viewPolar = 0.f;
-static glm::vec3 eye_center = glm::vec3(500,0,500);;
+static glm::vec3 eye_center = glm::vec3(300,300,0);
 static float cameraMovementSpeed = 0.f;
 glm::float32 FoV = 60;
 glm::float32 zNear = 0.1f;
@@ -107,8 +107,11 @@ int main(void)
 	Bot bot;
 	bot.initialize();
 
-	Light l1= Light(glm::vec3(300,300,300),glm::vec3(1,0.,0.),10,60,200,800,SUN);
-	Lights lights = Lights(Screen_sizeX,Screen_sizeY,{l1});
+	Light l1= Light(glm::vec3(0,300,300),glm::vec3(1.,0.,0.),10000000,60,10,1000,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
+	Light l2= Light(glm::vec3(300,300,0),glm::vec3(0.,1.,0.),1000000,60,10,1000,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
+	Light l3= Light(glm::vec3(-300,300,-300),glm::vec3(0.,0.,1.),1000000,60,200,800,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
+
+	Lights lights = Lights(Screen_sizeX,Screen_sizeY,{l1,l2,l3});
 	lights.put_data_buffer();
 	do
 	{
@@ -151,14 +154,15 @@ int main(void)
 			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, lights.get_shadows(), 0, i);
 			glClear(GL_DEPTH_BUFFER_BIT);
 			//bot.render(light.get_lightVP(glm::vec3(0,0,0),glm::vec3(0,1,0)));
-			o.render(light.get_lightVP(glm::vec3(0,0,0),glm::vec3(0,1,0)),lights);
+			o.render(light.get_lightVP(light.get_LookAt(),light.get_Up()),camera.get_position(),lights);
 			i++;
 			switch(light.get_type()) {
 				case SUN:
 					glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, lights.get_shadows(), 0, i);
 					glClear(GL_DEPTH_BUFFER_BIT);
-					o.render(light.get_lightVP(light.get_pos()*2.f,glm::vec3(0,1,0)),lights);
+					o.render(light.get_lightVP(glm::cross(light.get_Up(),glm::cross(light.get_Up(),light.get_LookAt())),light.get_Up()),camera.get_position(),lights);
 					//bot.render(light.get_lightVP(glm::vec3(500,500,500),glm::vec3(0,1,0)));
+					i++;
 					break;
 			}
 		}
@@ -167,7 +171,7 @@ int main(void)
 		glViewport(0,0,Screen_sizeX,Screen_sizeY);
 
 		bot.render(camera.get_MVP());
-		o.render(camera.get_MVP(),lights);
+		o.render(camera.get_MVP(),camera.get_position(),lights);
 		skybox.render(camera.get_MVP());
 
 

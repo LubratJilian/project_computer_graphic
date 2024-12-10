@@ -10,6 +10,7 @@
 #include<vector>
 #include "../render/shader.h"
 #include<Lights.h>
+#include<Camera.h>
 
 bool loadOBJ(
 	const char * path, 
@@ -21,7 +22,7 @@ bool loadOBJ(
 class Object{
 public:
 	void initialize(glm::vec3 position, glm::vec3 scale, TextureLoader textureLoader);
-	void render(glm::mat4 cameraMatrix, Lights lights);
+	void render(glm::mat4 cameraMatrix, glm::vec3 cameraPosition, Lights lights);
 	glm::vec3 get_position();
 	void set_scale(glm::vec3 scale);
 	void cleanup();
@@ -33,13 +34,19 @@ private:
 	GLuint indexBufferID;
 	GLuint colorBufferID;
 	GLuint uvBufferID;
+	GLuint normalsID;
 	GLuint textureID;
 	GLuint Vao;
+	GLuint nbLightID;
 	GLuint blockIndex;
+	GLuint ModelID;
+	GLuint CameraPositionID;
+
 
 	// Shader variable IDs
 	GLuint mvpMatrixID;
 	GLuint textureSamplerID;
+	GLuint textureSampler3DID;
 	GLuint programID;
 
 	std::vector<glm::vec3> vertices;

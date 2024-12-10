@@ -14,10 +14,12 @@ enum Light_Type {
 };
 
 struct struct_light {
+    alignas(64) glm::mat4 mvp;
     alignas(16) glm::vec3 position;
     alignas(16) glm::vec3 color;
     alignas(4) int type;
     alignas(4) float intensity;   // add alignas 12 if needed on an empty section
+    float padding[3];    // 8 bytes padding
 };
 typedef struct struct_light light;
 
@@ -30,13 +32,18 @@ private:
     float _FoV;
     float _Near;
     float _Far;
+    glm::vec3 _LookAt;
+    glm::vec3 _Up;
+
 public :
-    Light(glm::vec3 position, glm::vec3 color, float intensity, float FoV, float Near, float Far, Light_Type type);
+    Light(glm::vec3 position, glm::vec3 color, float intensity, float FoV, float Near, float Far, glm::vec3 lookAt, glm::vec3 upp, Light_Type type);
     float getIntensity();
     Light_Type get_type();
     glm::vec3 get_pos();
     glm::mat4 get_lightVP(glm::vec3 lookAt, glm::vec3 up);
     light convert_light();
+    glm::vec3 get_Up();
+    glm::vec3 get_LookAt();
 };
 
 class Lights{

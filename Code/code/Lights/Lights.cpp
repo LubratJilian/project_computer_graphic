@@ -22,11 +22,11 @@ Lights::Lights(int width, int height, int number_lights) {
     }
 
     // Set texture parameters
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, 0);
+    //glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, 0);
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, shadows, 0);
     //glDrawBuffer(GL_DEPTH_ATTACHMENT);
@@ -62,7 +62,7 @@ GLuint Lights::get_shadows() {
     return shadows;
 }
 
-Light::Light(glm::vec3 position, glm::vec3 color, float intensity, float FoV, float Near, float Far, Light_Type type) {
+Light::Light(glm::vec3 position, glm::vec3 color, float intensity, float FoV, float Near, float Far, glm::vec3 lookAt, glm::vec3 up, Light_Type type) {
     this -> position = position;
     this -> color = color;
     this -> intensity = intensity;
@@ -70,6 +70,8 @@ Light::Light(glm::vec3 position, glm::vec3 color, float intensity, float FoV, fl
     _FoV = FoV;
     _Near = Near;
     _Far = Far;
+    _LookAt = lookAt;
+    _Up = up;
 }
 
 float Light::getIntensity() {
@@ -91,7 +93,7 @@ glm::vec3 Light::get_pos() {
 void Lights::convert_lights() {
     for(int i=0;i<10;i++){
         if(lights.size()<=i) {
-            converted_lights[i] = {glm::vec3(0,0,0),glm::vec3(0,0,0),0,0};
+            converted_lights[i] = {glm::mat4(0),glm::vec3(0,0,0),glm::vec3(0,0,0), 0, 0, {0,0}};
         }
         else {
             converted_lights[i] = lights[i].convert_light();
@@ -100,7 +102,7 @@ void Lights::convert_lights() {
 }
 
 light Light::convert_light() {
-    light l = { position, color, type, intensity};
+    light l = {get_lightVP(_LookAt, _Up), position, color, type, intensity, {0,0}};
     return l;
 }
 
@@ -113,4 +115,12 @@ void Lights::put_data_buffer() {
 
 GLuint Lights::get_UBO() {
     return UBO;
+}
+
+glm::vec3 Light::get_Up() {
+    return _Up;
+}
+
+glm::vec3 Light::get_LookAt() {
+    return _LookAt;
 }
