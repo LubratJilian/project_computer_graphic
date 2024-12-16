@@ -20,6 +20,8 @@ include_directories(
 		code/Textures/
 		code/Animation/Bot/
 		code/Lights/
+		code/CloudsGenerator/
+		code/Quad/
 
 
 
@@ -34,6 +36,8 @@ add_executable(main
 		code/Textures/TextureLoader.cpp
 		code/Animation/Bot/Bot.cpp
 		code/Lights/Lights.cpp
+		code/CloudsGenerator/CloudsGenerator.cpp
+		code/Quad/Quad.cpp
 )
 
 

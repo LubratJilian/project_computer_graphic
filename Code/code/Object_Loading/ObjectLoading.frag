@@ -5,7 +5,7 @@ in vec2 UV;
 in vec3 Normal;
 uniform sampler2D myTextureSampler;
 
-out vec3 color;
+out vec4 out_color;
 
 uniform sampler2DArray shadows;
 
@@ -52,7 +52,7 @@ void main(){
 	float ambient_term = 0.1;
 	int n=100;
 
-	color = vec3(0,0,0);
+	vec3 color = vec3(0,0,0);
 	for(int i=0;i<numberLights;i++){
 
 		vec3 light_direction = normalize(lights_tab[i].position-WorldPosition.xyz);
@@ -75,6 +75,8 @@ void main(){
 
 	color = color/(1+color);
 	color = pow(color,vec3(1.0/2.2));
+	out_color = vec4(color,1);
+
 
 	//color = vec3(1-calcul_shadow(0));
 }

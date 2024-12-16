@@ -17,6 +17,7 @@
 #include <TextureLoader.h>
 #include<Lights.h>
 #include<tinygltf-2.9.3/stb_image_write.h>
+#include <CloudsGenerator.h>
 
 static GLFWwindow *window;
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -92,7 +93,9 @@ int main(void)
 	// Background
 	glClearColor(0.2f, 0.2f, 0.25f, 0.0f);
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glEnable(GL_CULL_FACE);
 
 	// Time and frame rate tracking
 	static double lastTime = glfwGetTime();
@@ -113,6 +116,14 @@ int main(void)
 
 	Lights lights = Lights(Screen_sizeX,Screen_sizeY,{l1,l2,l3});
 	lights.put_data_buffer();
+
+	GLenum glerror= glGetError();
+	if(glerror != 0) {
+		std::cout<<"Erreur osjkjssl"<<glerror<<std::endl;
+	}
+
+	CloudsGenerator cloudsGenerator = CloudsGenerator(glm::vec3(0,-50,0),glm::vec3(3000,100,3000),glm::vec3(50,20,50));
+
 	do
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -173,6 +184,7 @@ int main(void)
 		bot.render(camera.get_MVP());
 		o.render(camera.get_MVP(),camera.get_position(),lights);
 		skybox.render(camera.get_MVP());
+		cloudsGenerator.renderClouds(camera.get_MVP(),camera.get_position(),lights);
 
 
 		// Swap buffers
