@@ -10,7 +10,6 @@
 #include <glm/glm.hpp>
 #include<Lights.h>
 #include "../render/shader.h"
-#include<Quad.h>
 
 class PerlinNoiseGenerator{
 public:

@@ -21,10 +21,6 @@ include_directories(
 		code/Animation/Bot/
 		code/Lights/
 		code/CloudsGenerator/
-		code/Quad/
-
-
-
 )
 
 add_executable(main
@@ -37,7 +33,6 @@ add_executable(main
 		code/Animation/Bot/Bot.cpp
 		code/Lights/Lights.cpp
 		code/CloudsGenerator/CloudsGenerator.cpp
-		code/Quad/Quad.cpp
 )
 
 
