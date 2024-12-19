@@ -76,7 +76,5 @@ void main(){
 	color = color/(1+color);
 	color = pow(color,vec3(1.0/2.2));
 	out_color = vec4(color,1);
-
-
 	//color = vec3(1-calcul_shadow(0));
 }

@@ -181,7 +181,7 @@ int main(void)
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
 		glViewport(0,0,Screen_sizeX,Screen_sizeY);
 
-		bot.render(camera.get_MVP());
+		bot.render(camera.get_MVP(),camera.get_position(),lights);
 		o.render(camera.get_MVP(),camera.get_position(),lights);
 		skybox.render(camera.get_MVP());
 		cloudsGenerator.renderClouds(camera.get_MVP(),camera.get_position(),lights);

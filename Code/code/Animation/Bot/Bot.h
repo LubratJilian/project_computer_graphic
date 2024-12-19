@@ -14,6 +14,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include<iostream>
+#include<Lights.h>
 
 struct PrimitiveObject {
     GLuint vao;
@@ -80,16 +81,18 @@ class Bot{
     void drawMesh(const std::vector<PrimitiveObject> &primitiveObjects,tinygltf::Model &model, tinygltf::Mesh &mesh);
     void drawModelNodes(const std::vector<PrimitiveObject>& primitiveObjects,tinygltf::Model &model, tinygltf::Node &node);
     void drawModel(const std::vector<PrimitiveObject>& primitiveObjects,			tinygltf::Model &model);
-    void render(glm::mat4 cameraMatrix);
+    void render(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights lights);
     void cleanup();
 
     private:
 
     GLuint mvpMatrixID;
     GLuint jointMatricesID;
-    GLuint lightPositionID;
-    GLuint lightIntensityID;
+    GLuint CameraPositionID;
+    GLuint nbLightsID;
     GLuint programID;
+    GLuint textureSampler3DID;
+    GLuint blockIndex;
 
     tinygltf::Model model;
 

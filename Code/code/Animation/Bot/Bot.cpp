@@ -353,9 +353,12 @@ void Bot::initialize() {
 
 	// Get a handle for GLSL variables
 	mvpMatrixID = glGetUniformLocation(programID, "MVP");
-	lightPositionID = glGetUniformLocation(programID, "lightPosition");
-	lightIntensityID = glGetUniformLocation(programID, "lightIntensity");
+	CameraPositionID = glGetUniformLocation(programID, "cameraPosition");
+	nbLightsID = glGetUniformLocation(programID, "numberLights");
 	jointMatricesID = glGetUniformLocation(programID, "jointMatrices");
+	textureSampler3DID = glGetUniformLocation(programID,"shadows");
+	blockIndex = glGetUniformBlockIndex(programID, "lights");
+
 }
 
 void Bot::bindMesh(std::vector<PrimitiveObject> &primitiveObjects,
@@ -506,11 +509,11 @@ void Bot::drawModel(const std::vector<PrimitiveObject>& primitiveObjects,
 	}
 }
 
-void Bot::render(glm::mat4 cameraMatrix) {
+void Bot::render(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights lights) {
 	glUseProgram(programID);
 
 	// Set camera
-	glm::mat4 mvp = cameraMatrix;
+	glm::mat4 mvp = projectionMatrix;
 	glUniformMatrix4fv(mvpMatrixID, 1, GL_FALSE, &mvp[0][0]);
 
 	// -----------------------------------------------------------------
@@ -522,8 +525,17 @@ void Bot::render(glm::mat4 cameraMatrix) {
 	// -----------------------------------------------------------------
 
 	// Set light data
-	glUniform3fv(lightPositionID, 1, &lightPosition[0]);
-	glUniform3fv(lightIntensityID, 1, &lightIntensity[0]);
+	glUniform3fv(CameraPositionID,1 , &cameraPosition[0]);
+	glUniform1i(nbLightsID, lights.get_lights().size());
+
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, lights.get_shadows());
+	glUniform1i(textureSampler3DID, 1);
+
+	glBindBuffer(GL_UNIFORM_BUFFER, lights.get_UBO());
+	glUniformBlockBinding(programID, blockIndex, 0);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, lights.get_UBO());
 
 	// Draw the GLTF model
 	drawModel(primitiveObjects, model);
