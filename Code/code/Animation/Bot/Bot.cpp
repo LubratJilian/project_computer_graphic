@@ -289,9 +289,6 @@ void Bot::updateSkinning(const std::vector<glm::mat4> &nodeTransforms) {
 }
 
 void Bot::update(float time)  {
-	// TODO:
-	//return;	// Do nothing for T-pose, comment out for animation
-
 	if (model.animations.size() > 0) {
 		const tinygltf::Animation &animation = model.animations[0];
 		const AnimationObject &animationObject = animationObjects[0];

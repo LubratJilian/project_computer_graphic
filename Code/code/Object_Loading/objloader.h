@@ -21,7 +21,8 @@ bool loadOBJ(
 
 class Object{
 public:
-	void initialize(glm::vec3 position, glm::vec3 scale, TextureLoader textureLoader);
+	Object();
+	Object(glm::vec3 position, glm::vec3 scale, TextureLoader textureLoader, std::string nameObj, std::string textureName);
 	void render(glm::mat4 cameraMatrix, glm::vec3 cameraPosition, Lights lights);
 	glm::vec3 get_position();
 	void set_scale(glm::vec3 scale);

@@ -85,8 +85,11 @@ bool loadOBJ(
 	return true;
 }
 
+Object::Object() {
 
-void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader) {
+}
+
+Object::Object(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, std::string nameObj, std::string textureName) {
 	_Scale = scale;
 	_Position = position;
 
@@ -98,7 +101,7 @@ void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 
 	mvpMatrixID = glGetUniformLocation(programID, "MVP");
 
-	textureID = textureLoader.LoadTextureTileBox("../code/Textures/Crystals.png");
+	textureID = textureLoader.LoadTextureTileBox(("../code/Textures/"+textureName).c_str());
 
 	textureSamplerID  = glGetUniformLocation(programID, "myTextureSampler");
 
@@ -117,7 +120,7 @@ void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 	}
 
 
-	bool res = loadOBJ("../code/Objects/project.obj", vertices, uvs, normals);
+	bool res = loadOBJ(("../code/Objects/"+nameObj).c_str(), vertices, uvs, normals);
 	if(!res) {
 		std::cout<<"Error during the object import"<<std::endl;
 	}
