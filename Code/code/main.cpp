@@ -106,10 +106,20 @@ int main(void)
 	skybox.initialize(camera.get_position(), glm::vec3(3000, 3000, 3000),textureLoader);
 
 	std::vector<Object> elements;
-	Object obj = Object(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader,"main_part.obj","Rocks.jpg"); //glm::vec3(150, 150, 150)
-	Object obj2 = Object(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader,"crystals.obj","Crystals.png"); //glm::vec3(150, 150, 150)
-	elements.push_back(obj);
-	elements.push_back(obj2);
+	Object main_part = Object(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader,"main_part.obj","Rocks.jpg"); //glm::vec3(150, 150, 150)
+	Object crystals = Object(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader,"crystals.obj","Crystals.png"); //glm::vec3(150, 150, 150)
+	Object road = Object(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader,"road.obj","Road.jpg"); //glm::vec3(150, 150, 150)
+	std::map<std::string,glm::vec3> buildingColors;
+	buildingColors.insert({"Panel", glm::vec3(0,0,0.552)});
+	buildingColors.insert({"Walls", glm::vec3(0.883,0.886,0.906)});
+	buildingColors.insert({"material_1176.025", glm::vec3(0.192,0.268,0.552)});
+	buildingColors.insert({"material_0", glm::vec3(1,0,0)});
+	Object buildings = Object(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader,"buildings.obj",buildingColors); //glm::vec3(150, 150, 150)
+
+	elements.push_back(main_part);
+	elements.push_back(crystals);
+	elements.push_back(road);
+	elements.push_back(buildings);
 
 
 	Bot bot;
@@ -119,7 +129,7 @@ int main(void)
 	Light l2= Light(glm::vec3(300,300,0),glm::vec3(1.,1.,1.),1000000,60,10,1000,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
 	Light l3= Light(glm::vec3(-300,300,-300),glm::vec3(1.,1.,1.),1000000,60,200,800,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
 
-	Lights lights = Lights(Screen_sizeX,Screen_sizeY,{l1,l2,l3});
+	Lights lights = Lights(Screen_sizeX,Screen_sizeY,{l1,l3});
 	lights.put_data_buffer();
 
 	GLenum glerror= glGetError();
@@ -237,7 +247,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
 {
-	std::cout<<cameraMovementSpeed<<std::endl;
+	//std::cout<<cameraMovementSpeed<<std::endl;
 	if (key == GLFW_KEY_R && glfwGetKey(window,GLFW_KEY_R) == GLFW_PRESS) {
 		std::cout << "Reset." << std::endl;
 	}

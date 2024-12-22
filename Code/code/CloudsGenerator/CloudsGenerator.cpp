@@ -122,9 +122,6 @@ Grid::Grid(glm::vec3 size,glm::vec3 numbers) {
 				float posx = x*(size.x/numbers.x)-size.x/2;
 				float posy = y*(size.y/numbers.y)-size.y/2;
 				float posz = z*(size.z/numbers.z)-size.z/2;
-				if(z==50) {
-					std::cout<<z<<" "<<posz<<std::endl;
-				}
 				vertices.push_back(glm::vec3(posx,posy,posz));
 				uv.push_back(glm::vec3(x/numbers.x,z/numbers.z,y));
 

@@ -3,6 +3,7 @@
 in vec4 WorldPosition;
 in vec2 UV;
 in vec3 Normal;
+in vec3 Color;
 uniform sampler2D myTextureSampler;
 
 out vec4 out_color;
@@ -11,6 +12,8 @@ uniform sampler2DArray shadows;
 
 uniform int numberLights;
 uniform vec3 cameraPosition;
+uniform int colorActivated;
+
 
 struct  struct_light {
 	mat4 mvpLight;
@@ -68,7 +71,13 @@ void main(){
 
 		float shadow = (calcul_shadow(i));
 
-		vec3 add_color = vec3(shadow)* lights_tab[i].color*vec3(common_term) * (specular_term + diffuse_term + ambient_term) * texture( myTextureSampler, UV ).rgb ;
+		vec3 add_color = vec3(0,0,0);
+		if(colorActivated == 1){
+			add_color = vec3(shadow)* lights_tab[i].color*vec3(common_term) * (specular_term + diffuse_term + ambient_term) * Color ;
+		}
+		else{
+			add_color = vec3(shadow)* lights_tab[i].color*vec3(common_term) * (specular_term + diffuse_term + ambient_term) * texture( myTextureSampler, UV ).rgb ;
+		}
 		color += add_color;
 		//color =  lights_tab[0].intensity * lights_tab[0].color * (texture( myTextureSampler, UV ).rgb + vec4(0, 0.462, 0.023, 0.480).rgb) / 2;
 	}

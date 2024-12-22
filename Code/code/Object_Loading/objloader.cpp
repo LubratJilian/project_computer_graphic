@@ -1,11 +1,8 @@
 #include "objloader.h"
 
 
-bool loadOBJ(
-	const char * path, 
-	std::vector<glm::vec3> & out_vertices, 
-	std::vector<glm::vec2> & out_uvs,
-	std::vector<glm::vec3> & out_normals
+bool Object::loadOBJ(
+	const char * path
 ){
 	printf("Loading OBJ file %s...\n", path);
 
@@ -13,7 +10,9 @@ bool loadOBJ(
 	std::vector<glm::vec3> temp_vertices; 
 	std::vector<glm::vec2> temp_uvs;
 	std::vector<glm::vec3> temp_normals;
-
+	std::vector<glm::vec3> temp_colors;
+	std::string typeStr = "";
+	int nb_add = 0;
 
 	FILE * file = fopen(path, "r");
 	if( file == NULL ){
@@ -33,15 +32,20 @@ bool loadOBJ(
 			glm::vec3 vertex;
 			fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
 			temp_vertices.push_back(vertex);
+
 		}else if ( strcmp( lineHeader, "vt" ) == 0 ){
 			glm::vec2 uv;
 			fscanf(file, "%f %f\n", &uv.x, &uv.y );
 			uv.y = -uv.y; // Invert V coordinate since we will only use DDS texture, which are inverted. Remove if you want to use TGA or BMP loaders.
 			temp_uvs.push_back(uv);
-		}else if ( strcmp( lineHeader, "vn" ) == 0 ){
+		}else if ( strcmp( lineHeader, "vn" ) == 0 ) {
 			glm::vec3 normal;
 			fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z );
 			temp_normals.push_back(normal);
+		}else if(colors_activated && strcmp(lineHeader, "usemtl") == 0){
+			char type[128];
+			fscanf(file, "%s\n", type);
+			typeStr = std::string(type);
 		}else if ( strcmp( lineHeader, "f" ) == 0 ){
 			std::string vertex1, vertex2, vertex3;
 			unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
@@ -49,6 +53,15 @@ bool loadOBJ(
 			if (matches != 9){
 				printf("File can't be read by our simple parser :-( Try exporting with other options\n");
 				return false;
+			}
+			if(colors_activated && !typeStr.empty()) {
+				for(std::map<std::string,glm::vec3>::iterator it = Colors.begin(); it != Colors.end(); ++it) {
+					if(typeStr.find(it->first) != std::string::npos) {
+						for(int b=0; b<3;b++) {
+							colors.push_back(it->second);
+						}
+					}
+				}
 			}
 			vertexIndices.push_back(vertexIndex[0]);
 			vertexIndices.push_back(vertexIndex[1]);
@@ -59,11 +72,11 @@ bool loadOBJ(
 			normalIndices.push_back(normalIndex[0]);
 			normalIndices.push_back(normalIndex[1]);
 			normalIndices.push_back(normalIndex[2]);
-		}else{
+		}
+			else{
 			char stupidBuffer[1000];
 			fgets(stupidBuffer, 1000, file);
 		}
-
 	}
 
 	for( unsigned int i=0; i<vertexIndices.size(); i++ ){
@@ -76,9 +89,9 @@ bool loadOBJ(
 		glm::vec2 uv = temp_uvs[ uvIndex-1 ];
 		glm::vec3 normal = temp_normals[ normalIndex-1 ];
 		
-		out_vertices.push_back(vertex);
-		out_uvs     .push_back(uv);
-		out_normals .push_back(normal);
+		vertices.push_back(vertex);
+		uvs.push_back(uv);
+		normals.push_back(normal);
 	
 	}
 
@@ -86,10 +99,21 @@ bool loadOBJ(
 }
 
 Object::Object() {
+}
 
+Object::Object(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, std::string nameObj, std::map<std::string,glm::vec3> colors) {
+	Colors = colors;
+	colors_activated = true;
+	initialize(position, scale,textureLoader, nameObj);
 }
 
 Object::Object(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, std::string nameObj, std::string textureName) {
+	textureID = textureLoader.LoadTextureTileBox(("../code/Textures/"+textureName).c_str());
+	colors_activated = false;
+	initialize(position, scale,textureLoader, nameObj);
+}
+
+void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, std::string nameObj){
 	_Scale = scale;
 	_Position = position;
 
@@ -101,7 +125,6 @@ Object::Object(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, 
 
 	mvpMatrixID = glGetUniformLocation(programID, "MVP");
 
-	textureID = textureLoader.LoadTextureTileBox(("../code/Textures/"+textureName).c_str());
 
 	textureSamplerID  = glGetUniformLocation(programID, "myTextureSampler");
 
@@ -111,7 +134,7 @@ Object::Object(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, 
 	CameraPositionID = glGetUniformLocation(programID, "cameraPosition");
 	nbLightID = glGetUniformLocation(programID, "numberLights");
 
-
+	color_activatedID = glGetUniformLocation(programID, "colorActivated");
 
 	blockIndex = glGetUniformBlockIndex(programID, "lights");
 	if (blockIndex == GL_INVALID_INDEX) {
@@ -120,7 +143,7 @@ Object::Object(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, 
 	}
 
 
-	bool res = loadOBJ(("../code/Objects/"+nameObj).c_str(), vertices, uvs, normals);
+	bool res = loadOBJ(("../code/Objects/"+nameObj).c_str());
 	if(!res) {
 		std::cout<<"Error during the object import"<<std::endl;
 	}
@@ -135,6 +158,12 @@ Object::Object(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, 
 	glGenBuffers(1, &uvBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, uvBufferID);
 	glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
+
+	if(colors_activated) {
+		glGenBuffers(1, &colorBufferID);
+		glBindBuffer(GL_ARRAY_BUFFER, colorBufferID);
+		glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(glm::vec3), &colors[0], GL_STATIC_DRAW);
+	}
 
 	glGenBuffers(1, &normalsID);
 	glBindBuffer(GL_ARRAY_BUFFER, normalsID);
@@ -159,11 +188,16 @@ void Object::render(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights
 
 	glUniform1i(nbLightID, lights.get_lights().size());
 
+	glUniform1i(color_activatedID, colors_activated);
 
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, textureID);
-	glUniform1i(textureSamplerID, 0);
+
+	if(!colors_activated) {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glUniform1i(textureSamplerID, 0);
+	}
+
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, lights.get_shadows());
@@ -201,6 +235,19 @@ void Object::render(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights
 		0,                                // stride
 		(void*)0                          // array buffer offset
 	);
+
+	if(colors_activated) {
+		glEnableVertexAttribArray(3);
+		glBindBuffer(GL_ARRAY_BUFFER, colorBufferID);
+		glVertexAttribPointer(
+			3,                                // attribute
+			3,                                // size
+			GL_FLOAT,                         // type
+			GL_FALSE,                         // normalized?
+			0,                                // stride
+			(void*)0                          // array buffer offset
+		);
+	}
 
 	glBindBuffer(GL_UNIFORM_BUFFER, lights.get_UBO());
 	glUniformBlockBinding(programID, blockIndex, 0);
