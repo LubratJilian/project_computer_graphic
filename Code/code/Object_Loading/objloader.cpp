@@ -98,19 +98,19 @@ bool Object::loadOBJ(
 	return true;
 }
 
-Object::Object() {
+Object::Object():material(0,0,0,0) {
 }
 
-Object::Object(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, std::string nameObj, std::map<std::string,glm::vec3> colors) {
+Object::Object(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, std::string nameObj, std::map<std::string,glm::vec3> colors,Material mat): material(mat) {
 	Colors = colors;
 	colors_activated = true;
 	initialize(position, scale,textureLoader, nameObj);
 }
 
-Object::Object(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, std::string nameObj, std::string textureName) {
-	textureID = textureLoader.LoadTextureTileBox(("../code/Textures/"+textureName).c_str());
+Object::Object(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, std::string nameObj, std::string textureName,Material mat): material(mat) {
+	textureID = textureLoader.LoadTextureTileBox(("../code/Textures/" + textureName).c_str());
 	colors_activated = false;
-	initialize(position, scale,textureLoader, nameObj);
+	initialize(position, scale, textureLoader, nameObj);
 }
 
 void Object::set_model_matrix(glm::mat4 model) {
@@ -147,8 +147,10 @@ void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 
 	color_activatedID = glGetUniformLocation(programID, "colorActivated");
 
-	blockIndex = glGetUniformBlockIndex(programID, "lights");
-	if (blockIndex == GL_INVALID_INDEX) {
+	blockIndexLight = glGetUniformBlockIndex(programID, "lights");
+	blockIndexMaterial = glGetUniformBlockIndex(programID, "material");
+
+	if (blockIndexLight == GL_INVALID_INDEX) {
 		std::cerr << "Error: Uniform block 'lights' not found!" << std::endl;
 		return;
 	}
@@ -260,8 +262,14 @@ void Object::render(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights
 	}
 
 	glBindBuffer(GL_UNIFORM_BUFFER, lights.get_UBO());
-	glUniformBlockBinding(programID, blockIndex, 0);
+	glUniformBlockBinding(programID, blockIndexLight, 0);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, lights.get_UBO());
+
+
+	glBindBuffer(GL_UNIFORM_BUFFER, material.get_UBO());
+	glUniformBlockBinding(programID, blockIndexMaterial, 1);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 1, material.get_UBO());
+
 	glDrawArrays(GL_TRIANGLES, 0, vertices.size() );
 
 	glDisableVertexAttribArray(0);

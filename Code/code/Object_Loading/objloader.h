@@ -12,14 +12,14 @@
 #include "../render/shader.h"
 #include<Lights.h>
 #include<Camera.h>
-
+#include<Material.h>
 
 
 class Object{
 public:
 	Object();
-	Object(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, std::string nameObj, std::map<std::string,glm::vec3> colors);
-	Object(glm::vec3 position, glm::vec3 scale, TextureLoader textureLoader, std::string nameObj, std::string textureName);
+	Object(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, std::string nameObj, std::map<std::string,glm::vec3> colors,Material mat);
+	Object(glm::vec3 position, glm::vec3 scale, TextureLoader textureLoader, std::string nameObj, std::string textureName,Material mat);
 	void render(glm::mat4 cameraMatrix, glm::vec3 cameraPosition, Lights lights);
 	glm::vec3 get_position();
 	void set_scale(glm::vec3 scale);
@@ -43,7 +43,8 @@ private:
 	GLuint textureID;
 	GLuint Vao;
 	GLuint nbLightID;
-	GLuint blockIndex;
+	GLuint blockIndexLight;
+	GLuint blockIndexMaterial;
 	GLuint ModelID;
 	GLuint CameraPositionID;
 	GLuint color_activatedID;
@@ -64,6 +65,7 @@ private:
 	glm::mat4 modelMatrix;
 	std::map<std::string,glm::vec3> Colors;
 	bool colors_activated;
+	Material material;
 
 };
 

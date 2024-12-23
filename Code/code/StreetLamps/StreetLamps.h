@@ -17,7 +17,7 @@
 
 class StreetLamps{
   public:
-    StreetLamps(TextureLoader textureLoader,NetworkLoader networkLoader);
+    StreetLamps(TextureLoader textureLoader,NetworkLoader networkLoader, Material mat);
     void render(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights lights);
 
   private:

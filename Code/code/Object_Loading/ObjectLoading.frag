@@ -25,8 +25,20 @@ struct  struct_light {
 };
 
 layout(std140) uniform lights {
-	struct_light lights_tab[10]; // Taille maximale du tableau
+	struct_light lights_tab[150]; // Taille maximale du tableau
 };
+
+struct struct_Material {
+	float diffuse;
+	float specular;   // add alignas 12 if needed on an empty section
+	float ambient;
+	float n;   // add alignas 12 if needed on an empty section
+};
+
+layout(std140) uniform material {
+	struct_Material m; // Taille maximale du tableau
+};
+
 
 float calcul_shadow(int i){
 
@@ -49,22 +61,18 @@ float calcul_shadow(int i){
 }
 
 void main(){
-	//TODO add something like materials
-	float diffuse = 0.5;
-	float specular = 0.5;
-	float ambient_term = 1;
-	int n=100;
+	float ambient_term = m.ambient;
 
 	vec3 color = vec3(0,0,0);
 	for(int i=0;i<numberLights;i++){
 
 		vec3 light_direction = normalize(lights_tab[i].position-WorldPosition.xyz);
-		float diffuse_term = diffuse * max(dot(light_direction,Normal),0.0);
+		float diffuse_term = m.diffuse * max(dot(light_direction,Normal),0.0);
 
 		vec3 reflected_vector = normalize(light_direction-2*dot(Normal,light_direction)*Normal);
 		vec3 camera_direction = normalize(cameraPosition-WorldPosition.xyz);
 
-		float specular_term = specular*pow(max(dot(reflected_vector,camera_direction),0.0),n);
+		float specular_term = m.specular*pow(max(dot(reflected_vector,camera_direction),0.0),m.n);
 
 		float r = pow(length(lights_tab[i].position-WorldPosition.xyz),2);
 		float common_term = lights_tab[i].intensity/(4*3.14*r);

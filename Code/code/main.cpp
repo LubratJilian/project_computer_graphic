@@ -20,6 +20,7 @@
 #include <CloudsGenerator.h>
 #include <NetworkLoader.h>
 #include<StreetLamps.h>
+#include<Material.h>
 
 static GLFWwindow *window;
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -108,16 +109,18 @@ int main(void)
 
 	skybox.initialize(camera.get_position(), glm::vec3(3000, 3000, 3000),textureLoader);
 
+	Material test = Material(0,0,1,100);
+
 	std::vector<Object> elements;
-	Object main_part = Object(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader,"main_part.obj","Rocks.jpg"); //glm::vec3(150, 150, 150)
-	Object crystals = Object(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader,"crystals.obj","Crystals.png"); //glm::vec3(150, 150, 150)
-	Object road = Object(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader,"road.obj","Road.jpg"); //glm::vec3(150, 150, 150)
+	Object main_part = Object(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader,"main_part.obj","Rocks.jpg",test); //glm::vec3(150, 150, 150)
+	Object crystals = Object(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader,"crystals.obj","Crystals.png",test); //glm::vec3(150, 150, 150)
+	Object road = Object(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader,"road.obj","Road.jpg",test); //glm::vec3(150, 150, 150)
 	std::map<std::string,glm::vec3> buildingColors;
 	buildingColors.insert({"Panel", glm::vec3(0,0,0.552)});
 	buildingColors.insert({"Walls", glm::vec3(0.883,0.886,0.906)});
 	buildingColors.insert({"material_1176.025", glm::vec3(0.192,0.268,0.552)});
 	buildingColors.insert({"material_0", glm::vec3(1,0,0)});
-	Object buildings = Object(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader,"buildings.obj",buildingColors); //glm::vec3(150, 150, 150)
+	Object buildings = Object(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader,"buildings.obj",buildingColors,test); //glm::vec3(150, 150, 150)
 
 	elements.push_back(main_part);
 	elements.push_back(crystals);
@@ -128,19 +131,15 @@ int main(void)
 	Bot bot;
 	bot.initialize();
 
-	Light l1= Light(glm::vec3(0,300,300),glm::vec3(1.,0.7,0.7),1000000,60,10,1000,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
-	Light l2= Light(glm::vec3(300,300,0),glm::vec3(1.,0.7,0.7),100000,60,10,1000,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
-	Light l3= Light(glm::vec3(-300,300,-300),glm::vec3(1.,0.7,0.7),100000,60,200,800,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
-
-	Lights lights = Lights(Screen_sizeX,Screen_sizeY,{l1,l2,l3});
+	Light l1= Light(glm::vec3(300,300,300),glm::vec3(1.,0.7,0.7),1000000,60,10,1000,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
+	Light l2= Light(glm::vec3(300,300,-300),glm::vec3(1.,0.7,0.7),100000,60,10,1000,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
+	Light l3= Light(glm::vec3(-300,300,300),glm::vec3(1.,0.7,0.7),100000,60,200,800,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
+	Light l4= Light(glm::vec3(-300,300,-300),glm::vec3(1.,0.7,0.7),100000,60,200,800,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
+	Light l5= Light(glm::vec3(0,300,0),glm::vec3(1.,0.7,0.7),100000,60,200,800,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
+	Lights lights = Lights(Screen_sizeX,Screen_sizeY,{l1,l2,l3,l4,l5});
 	lights.put_data_buffer();
 
-	StreetLamps streetLamps = StreetLamps(textureLoader, networkLoader);
-
-	GLenum glerror= glGetError();
-	if(glerror != 0) {
-		std::cout<<"Erreur osjkjssl"<<glerror<<std::endl;
-	}
+	StreetLamps streetLamps = StreetLamps(textureLoader, networkLoader,test);
 
 	CloudsGenerator cloudsGenerator = CloudsGenerator(glm::vec3(0,-50,0),glm::vec3(3000,100,3000),glm::vec3(50,20,50));
 

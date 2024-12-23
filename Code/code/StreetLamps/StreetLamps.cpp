@@ -1,8 +1,8 @@
 #include<StreetLamps.h>
 
-StreetLamps::StreetLamps(TextureLoader textureLoader, NetworkLoader networkLoader) {
+StreetLamps::StreetLamps(TextureLoader textureLoader, NetworkLoader networkLoader, Material mat) {
     networkLoader.loadPositionFile("../code/Objects/street_lamps.objoriented",true,model_matrices,positions);
-    streetLamps = Object(glm::vec3(0,0,0),glm::vec3(100,100,100),textureLoader,"streetlamps.obj","StreetLamp.png");
+    streetLamps = Object(glm::vec3(0,0,0),glm::vec3(100,100,100),textureLoader,"streetlamps.obj","StreetLamp.png",mat);
 }
 
 void StreetLamps::render(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights lights) {
