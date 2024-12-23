@@ -28,6 +28,8 @@ public:
 	const char * path
 );
 	void initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, std::string nameObj);
+	void set_model_matrix(glm::mat4 model);
+	void set_position(glm::vec3 position);
 
 
 private:
@@ -59,6 +61,7 @@ private:
 	std::vector<glm::vec3> colors;
 	glm::vec3 _Scale;
 	glm::vec3 _Position;
+	glm::mat4 modelMatrix;
 	std::map<std::string,glm::vec3> Colors;
 	bool colors_activated;
 

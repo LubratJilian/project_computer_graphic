@@ -18,6 +18,8 @@
 #include<Lights.h>
 #include<tinygltf-2.9.3/stb_image_write.h>
 #include <CloudsGenerator.h>
+#include <NetworkLoader.h>
+#include<StreetLamps.h>
 
 static GLFWwindow *window;
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -48,6 +50,7 @@ glm::float32 zFar = 6000.0f;
 Camera camera = Camera(eye_center,viewAzimuth,viewPolar,FoV,zNear,zFar,cameraMovementSpeed);
 SkyBox skybox;
 TextureLoader textureLoader;
+NetworkLoader networkLoader;
 
 int main(void)
 {
@@ -125,12 +128,14 @@ int main(void)
 	Bot bot;
 	bot.initialize();
 
-	Light l1= Light(glm::vec3(0,300,300),glm::vec3(1.,1.,1.),10000000,60,10,1000,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
-	Light l2= Light(glm::vec3(300,300,0),glm::vec3(1.,1.,1.),1000000,60,10,1000,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
-	Light l3= Light(glm::vec3(-300,300,-300),glm::vec3(1.,1.,1.),1000000,60,200,800,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
+	Light l1= Light(glm::vec3(0,300,300),glm::vec3(1.,0.7,0.7),1000000,60,10,1000,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
+	Light l2= Light(glm::vec3(300,300,0),glm::vec3(1.,0.7,0.7),100000,60,10,1000,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
+	Light l3= Light(glm::vec3(-300,300,-300),glm::vec3(1.,0.7,0.7),100000,60,200,800,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
 
-	Lights lights = Lights(Screen_sizeX,Screen_sizeY,{l1,l3});
+	Lights lights = Lights(Screen_sizeX,Screen_sizeY,{l1,l2,l3});
 	lights.put_data_buffer();
+
+	StreetLamps streetLamps = StreetLamps(textureLoader, networkLoader);
 
 	GLenum glerror= glGetError();
 	if(glerror != 0) {
@@ -183,6 +188,7 @@ int main(void)
 			for(Object &o : elements) {
 				o.render(light.get_lightVP(light.get_LookAt(),light.get_Up()),camera.get_position(),lights);
 			}
+			streetLamps.render(light.get_lightVP(glm::cross(light.get_Up(),glm::cross(light.get_Up(),light.get_LookAt())),light.get_Up()),camera.get_position(),lights);
 			i++;
 			switch(light.get_type()) {
 				case SUN:
@@ -191,6 +197,7 @@ int main(void)
 					for(Object &o : elements) {
 						o.render(light.get_lightVP(glm::cross(light.get_Up(),glm::cross(light.get_Up(),light.get_LookAt())),light.get_Up()),camera.get_position(),lights);
 					}
+					streetLamps.render(light.get_lightVP(glm::cross(light.get_Up(),glm::cross(light.get_Up(),light.get_LookAt())),light.get_Up()),camera.get_position(),lights);
 					//bot.render(light.get_lightVP(glm::vec3(500,500,500),glm::vec3(0,1,0)));
 					i++;
 					break;
@@ -204,6 +211,7 @@ int main(void)
 		for(Object &o : elements) {
 			o.render(camera.get_MVP(),camera.get_position(),lights);
 		}
+		streetLamps.render(camera.get_MVP(),camera.get_position(),lights);
 		skybox.render(camera.get_MVP());
 		cloudsGenerator.renderClouds(camera.get_MVP(),camera.get_position(),lights);
 

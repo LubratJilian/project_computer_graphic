@@ -50,9 +50,9 @@ float calcul_shadow(int i){
 
 void main(){
 	//TODO add something like materials
-	float diffuse = 1;
-	float specular = 1;
-	float ambient_term = 0.1;
+	float diffuse = 0.5;
+	float specular = 0.5;
+	float ambient_term = 1;
 	int n=100;
 
 	vec3 color = vec3(0,0,0);

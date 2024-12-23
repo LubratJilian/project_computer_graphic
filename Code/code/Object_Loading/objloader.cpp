@@ -113,8 +113,19 @@ Object::Object(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, 
 	initialize(position, scale,textureLoader, nameObj);
 }
 
+void Object::set_model_matrix(glm::mat4 model) {
+	modelMatrix = model;
+}
+
+void Object::set_position(glm::vec3 position) {
+	_Position = position;
+}
+
+
 void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, std::string nameObj){
 	_Scale = scale;
+	modelMatrix = glm::mat4(1.);
+	modelMatrix = glm::scale(modelMatrix, _Scale);
 	_Position = position;
 
 	GLuint VertexArrayID;
@@ -176,8 +187,7 @@ void Object::render(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights
 	glBindVertexArray(Vao);
 
 	glUseProgram(programID);
-	glm::mat4 modelMatrix = glm::mat4(1.);
-	modelMatrix = glm::scale(modelMatrix, _Scale);
+
 
 
 	glUniformMatrix4fv(mvpMatrixID, 1, GL_FALSE, &projectionMatrix[0][0]);
