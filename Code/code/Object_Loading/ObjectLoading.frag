@@ -25,7 +25,7 @@ struct  struct_light {
 };
 
 layout(std140) uniform lights {
-	struct_light lights_tab[150]; // Taille maximale du tableau
+	struct_light lights_tab[10]; // Taille maximale du tableau
 };
 
 struct struct_Material {

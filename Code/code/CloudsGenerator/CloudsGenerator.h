@@ -9,6 +9,8 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include<Lights.h>
+#include <Material.h>
+
 #include "../render/shader.h"
 
 class PerlinNoiseGenerator{
@@ -54,23 +56,22 @@ private:
 
 class CloudsGenerator {
 public :
-    CloudsGenerator(glm::vec3 position,glm::vec3 size, glm::vec3 numbers);
+    CloudsGenerator(glm::vec3 position,glm::vec3 size, glm::vec3 numbers, Material mat);
     void renderClouds(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights lights);
 
 private :
     PerlinNoiseGenerator generator;
     GLuint programID;
     GLuint mvpMatrixID;
-    GLuint textureSampler3DID;
     GLuint textureSampler3DCloudsID;
     GLuint CameraPositionID;
-    GLuint nbLightID;
-    GLuint blockIndex;
     GLuint vao;
     GLuint ModelID;
     Grid grid;
     GLuint texture;
     glm::vec3 numbersElements;
+    Material material;
+    GLuint blockIndexMaterial;
 
 };
 

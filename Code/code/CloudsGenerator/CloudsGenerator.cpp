@@ -201,8 +201,8 @@ void Grid::convert() {
 
 }
 
-CloudsGenerator::CloudsGenerator(glm::vec3 position,glm::vec3 size, glm::vec3 numbers): generator(position, size),
-	grid(size, numbers) {
+CloudsGenerator::CloudsGenerator(glm::vec3 position,glm::vec3 size, glm::vec3 numbers, Material mat): generator(position, size),
+	grid(size, numbers), material(mat) {
 	numbersElements = numbers;
 	GLenum glerror = glGetError();
 	GLuint VertexArrayID;
@@ -216,17 +216,14 @@ CloudsGenerator::CloudsGenerator(glm::vec3 position,glm::vec3 size, glm::vec3 nu
 	mvpMatrixID = glGetUniformLocation(programID, "MVP");
 
 
-	textureSampler3DID = glGetUniformLocation(programID, "shadows");
 	textureSampler3DCloudsID = glGetUniformLocation(programID, "clouds");
 
 
 	ModelID = glGetUniformLocation(programID, "model");
 	CameraPositionID = glGetUniformLocation(programID, "cameraPosition");
-	nbLightID = glGetUniformLocation(programID, "numberLights");
 
-
-	blockIndex = glGetUniformBlockIndex(programID, "lights");
-	if (blockIndex == GL_INVALID_INDEX) {
+	blockIndexMaterial = glGetUniformBlockIndex(programID, "material");
+	if (blockIndexMaterial == GL_INVALID_INDEX) {
 		std::cerr << "Error: Uniform block 'lights' not found!" << std::endl;
 		return;
 	}
@@ -257,10 +254,6 @@ void CloudsGenerator::renderClouds(glm::mat4 projectionMatrix, glm::vec3 cameraP
 	glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
 	glUniform1i(textureSampler3DCloudsID, 0);
 
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, lights.get_shadows());
-	glUniform1i(textureSampler3DID, 1);
-
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, ids[1]);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -269,17 +262,13 @@ void CloudsGenerator::renderClouds(glm::mat4 projectionMatrix, glm::vec3 cameraP
 	glBindBuffer(GL_ARRAY_BUFFER, ids[2]);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-
-
+	glBindBuffer(GL_UNIFORM_BUFFER, material.get_UBO());
+	glUniformBlockBinding(programID, blockIndexMaterial, 1);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 1, material.get_UBO());
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ids[3]);
 
 	glUniformMatrix4fv(mvpMatrixID, 1, GL_FALSE, &projectionMatrix[0][0]);
-	glUniform3fv(CameraPositionID, 1, &cameraPosition[0]);
-	glUniform1i(nbLightID, lights.get_lights().size());
-	glBindBuffer(GL_UNIFORM_BUFFER, lights.get_UBO());
-	glUniformBlockBinding(programID, blockIndex, 0);
-	glBindBufferBase(GL_UNIFORM_BUFFER, 0, lights.get_UBO());
 
 	glUniformMatrix4fv(ModelID, 1, GL_FALSE, &grid.get_modelMatrix(cameraPosition, generator.get_position())[0][0]);
 	glDrawElements(

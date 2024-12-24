@@ -1,5 +1,9 @@
 #include "Material.h"
 
+Material::Material() {
+
+}
+
 Material::Material(float diffuse, float specular, float ambient, float n) {
     _Diffuse = diffuse;
     _Specular = specular;
@@ -22,4 +26,8 @@ material Material::get_converted() {
 
 GLuint Material::get_UBO() {
     return UBO;
+}
+
+void Material::change_ambient(float n) {
+    _Ambient = n;
 }

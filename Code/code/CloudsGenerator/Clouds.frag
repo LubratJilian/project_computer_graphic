@@ -6,23 +6,18 @@ out vec4 color;
 
 uniform sampler2DArray clouds;
 
-
-
-struct  struct_light {
-    mat4 mvpLight;
-    vec3 position;
-    vec3 color;
-    int type;
-    float intensity;
-    float padding[1]; // 8 bytes (manual padding for custom offset)
+struct struct_Material {
+    float diffuse;
+    float specular;   // add alignas 12 if needed on an empty section
+    float ambient;
+    float n;   // add alignas 12 if needed on an empty section
 };
 
-layout(std140) uniform lights {
-    struct_light lights_tab[10]; // Taille maximale du tableau
+layout(std140) uniform material {
+    struct_Material m; // Taille maximale du tableau
 };
 
 
 void main() {
-    float alpha = smoothstep(0.2, 0.8, texture(clouds,texCoords).r);
-    color = vec4(1,1,1,texture(clouds,texCoords).r);
+    color = vec4(1,1,1,texture(clouds,texCoords).r)*vec4(m.ambient,m.ambient,m.ambient,1);
 }

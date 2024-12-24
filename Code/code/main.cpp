@@ -109,7 +109,7 @@ int main(void)
 
 	skybox.initialize(camera.get_position(), glm::vec3(3000, 3000, 3000),textureLoader);
 
-	Material test = Material(0,0,1,100);
+	Material test = Material(1,1,1,100);
 
 	std::vector<Object> elements;
 	Object main_part = Object(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader,"main_part.obj","Rocks.jpg",test); //glm::vec3(150, 150, 150)
@@ -141,7 +141,8 @@ int main(void)
 
 	StreetLamps streetLamps = StreetLamps(textureLoader, networkLoader,test);
 
-	CloudsGenerator cloudsGenerator = CloudsGenerator(glm::vec3(0,-50,0),glm::vec3(3000,100,3000),glm::vec3(50,20,50));
+	Material material_clouds = Material(0,0,1,100);
+	CloudsGenerator cloudsGenerator = CloudsGenerator(glm::vec3(0,0,0),glm::vec3(3000,100,3000),glm::vec3(50,20,50),material_clouds);
 
 	do
 	{

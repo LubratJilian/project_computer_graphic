@@ -10,7 +10,6 @@ uniform mat4 model;
 uniform mat4 MVP;
 
 void main() {
-    vec4 worldPosition = model * vec4(position,1);
-    gl_Position = MVP * worldPosition;
+    gl_Position = MVP * vec4(position,1);
     texCoords = texcoord; // Pass 3D texture coordinates
 }

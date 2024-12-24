@@ -22,17 +22,19 @@ typedef struct struct_Material material;
 
 class Material {
     public:
+        Material();
         Material(float diffuse, float specular, float ambient, float n);
         GLuint get_UBO();
+        void change_ambient(float n);
     private:
         material get_converted();
-        float _Diffuse;
-        float _Ambient;
-        float _Specular;
-        float n;
-        material converted;
-        GLuint FBO;
-        GLuint UBO;
+        float _Diffuse{};
+        float _Ambient{};
+        float _Specular{};
+        float n{};
+        material converted{};
+        GLuint FBO{};
+        GLuint UBO{};
 };
 
 
