@@ -47,7 +47,7 @@ struct AnimationObject {
 
 class Bot{
   public:
-    void initialize(glm::vec3 translation,glm::vec3 scale);
+    void initialize(glm::vec3 translation,glm::vec3 *scale);
     void update(float time);
     void updateSkinning(const std::vector<glm::mat4> &nodeTransforms);
     void updateAnimation(
@@ -107,6 +107,8 @@ class Bot{
     std::vector<SkinObject> skinObjects;
 
     std::vector<AnimationObject> animationObjects;
+    glm::vec3 _Translation;
+    glm::vec3* _Scale;
   };
 
 #endif //BOT_H

@@ -93,7 +93,7 @@ void PerlinNoiseGenerator::generateTexture(glm::vec3 position, float scale, glm:
 				float fy = posy / scale;
 				float fz = posz / scale;
 
-				float noiseValue = perlinNoise3D(fx-offsetX, fy,fz-offsetZ); // Or use 3D Perlin noise if needed
+				float noiseValue = perlinNoise3D(fx-offsetX/scale, fy,fz-offsetZ/scale); // Or use 3D Perlin noise if needed
 
 				noiseData[y * numbers.x * numbers.z + z * numbers.x + x] = noiseValue;///numbers.y;
 			}

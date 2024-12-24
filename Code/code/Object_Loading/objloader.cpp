@@ -101,19 +101,19 @@ bool Object::loadOBJ(
 Object::Object():material(0,0,0,0) {
 }
 
-Object::Object(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, std::string nameObj, std::map<std::string,glm::vec3> colors,Material mat): material(mat) {
+Object::Object(glm::vec3 position, glm::vec3 *scale,TextureLoader textureLoader, std::string nameObj, std::map<std::string,glm::vec3> colors,Material mat): material(mat) {
 	Colors = colors;
 	colors_activated = true;
 	initialize(position, scale,textureLoader, nameObj);
 }
 
-Object::Object(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, std::string nameObj, std::string textureName,Material mat): material(mat) {
+Object::Object(glm::vec3 position, glm::vec3 *scale,TextureLoader textureLoader, std::string nameObj, std::string textureName,Material mat): material(mat) {
 	textureID = textureLoader.LoadTextureTileBox(("../code/Textures/" + textureName).c_str());
 	colors_activated = false;
 	initialize(position, scale, textureLoader, nameObj);
 }
 
-Object::Object(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, std::string nameObj, std::string textureName,Material mat,std::string shaderName): material(mat) {
+Object::Object(glm::vec3 position, glm::vec3 *scale,TextureLoader textureLoader, std::string nameObj, std::string textureName,Material mat,std::string shaderName): material(mat) {
 	textureID = textureLoader.LoadTextureTileBox(("../code/Textures/" + textureName).c_str());
 	colors_activated = false;
 	initialize(position, scale, textureLoader, nameObj,shaderName);
@@ -128,10 +128,10 @@ void Object::set_position(glm::vec3 position) {
 }
 
 
-void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, std::string nameObj){
+void Object::initialize(glm::vec3 position, glm::vec3 *scale,TextureLoader textureLoader, std::string nameObj){
 	_Scale = scale;
 	modelMatrix = glm::mat4(1.);
-	modelMatrix = glm::scale(modelMatrix, _Scale);
+	modelMatrix = glm::scale(modelMatrix, *_Scale);
 	_Position = position;
 
 	GLuint VertexArrayID;
@@ -190,10 +190,9 @@ void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 	glBindVertexArray(0);
 	}
 
-void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, std::string nameObj,std::string shaderName){
+void Object::initialize(glm::vec3 position, glm::vec3 *scale,TextureLoader textureLoader, std::string nameObj,std::string shaderName){
 	_Scale = scale;
-	modelMatrix = glm::mat4(1.);
-	modelMatrix = glm::scale(modelMatrix, _Scale);
+
 	_Position = position;
 
 	GLuint VertexArrayID;
@@ -257,7 +256,8 @@ void Object::render(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights
 	glBindVertexArray(Vao);
 
 	glUseProgram(programID);
-
+	modelMatrix = glm::mat4(1.);
+	modelMatrix = glm::scale(modelMatrix, *_Scale);
 
 
 	glUniformMatrix4fv(mvpMatrixID, 1, GL_FALSE, &projectionMatrix[0][0]);
@@ -430,10 +430,7 @@ void Object::prepare(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Light
 	glUniformBlockBinding(programID, blockIndexMaterial, 1);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 1, material.get_UBO());
 
-	GLenum error = glGetError();
-	if(error != 0) {
-		std::cout<<error<<std::endl;
-	}
+
 }
 
 int  Object::getSize() {
@@ -444,8 +441,12 @@ glm::vec3 Object::get_position() {
 	return _Position;
 }
 
-void Object::set_scale(glm::vec3 scale) {
+void Object::set_scale(glm::vec3 *scale) {
 	_Scale = scale;
+}
+
+glm::vec3 Object::get_scale() {
+	return *_Scale;
 }
 
 void Object::cleanup() {

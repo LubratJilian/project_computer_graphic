@@ -52,6 +52,7 @@ Camera camera = Camera(eye_center,viewAzimuth,viewPolar,FoV,zNear,zFar,cameraMov
 SkyBox skybox;
 TextureLoader textureLoader;
 NetworkLoader networkLoader;
+glm::vec3 scale = glm::vec3(100,100,100);
 
 int main(void)
 {
@@ -112,15 +113,19 @@ int main(void)
 	Material test = Material(1,1,1,100);
 
 	std::vector<Object> elements;
-	Object main_part = Object(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader,"main_part.obj","Rocks.jpg",test); //glm::vec3(150, 150, 150)
-	Object crystals = Object(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader,"crystals.obj","Crystals.png",test); //glm::vec3(150, 150, 150)
-	Object road = Object(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader,"road.obj","Road.jpg",test); //glm::vec3(150, 150, 150)
+	Material material_main_part = Material(0.5,0,1,100);
+	Object main_part = Object(glm::vec3(0.,0.,0.), &scale,textureLoader,"main_part.obj","Rocks.jpg",material_main_part); //glm::vec3(150, 150, 150)
+	Material material_crystal = Material(1,1,0.5,1);
+	Object crystals = Object(glm::vec3(0.,0.,0.), &scale,textureLoader,"crystals.obj","Crystals.png",material_crystal); //glm::vec3(150, 150, 150)
+	Material material_road = Material(0.5,0.5,1,1);
+	Object road = Object(glm::vec3(0.,0.,0.), &scale,textureLoader,"road.obj","Road.jpg",material_road); //glm::vec3(150, 150, 150)
+	Material material_buildings = Material(0.5,1,1,1);
 	std::map<std::string,glm::vec3> buildingColors;
 	buildingColors.insert({"Panel", glm::vec3(0,0,0.552)});
 	buildingColors.insert({"Walls", glm::vec3(0.883,0.886,0.906)});
 	buildingColors.insert({"material_1176.025", glm::vec3(0.192,0.268,0.552)});
 	buildingColors.insert({"material_0", glm::vec3(1,0,0)});
-	Object buildings = Object(glm::vec3(0.,0.,0.), glm::vec3(100.,100.,100.),textureLoader,"buildings.obj",buildingColors,test); //glm::vec3(150, 150, 150)
+	Object buildings = Object(glm::vec3(0.,0.,0.), &scale,textureLoader,"buildings.obj",buildingColors,material_buildings); //glm::vec3(150, 150, 150)
 
 	elements.push_back(main_part);
 	elements.push_back(crystals);
@@ -129,7 +134,7 @@ int main(void)
 
 
 	Bot bot;
-	bot.initialize(glm::vec3(0,500,0),glm::vec3(1,1,1));
+	bot.initialize(glm::vec3(0,500,0),&scale);
 
 	Light l1= Light(glm::vec3(300,300,300),glm::vec3(1.,0.7,0.7),1000000,60,10,1000,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
 	Light l2= Light(glm::vec3(300,300,-300),glm::vec3(1.,0.7,0.7),100000,60,10,1000,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
@@ -139,7 +144,7 @@ int main(void)
 	Lights lights = Lights(Screen_sizeX,Screen_sizeY,{l1,l2,l3,l4,l5});
 	lights.put_data_buffer();
 
-	StreetLamps streetLamps = StreetLamps(textureLoader, networkLoader,test,"streetlamps.obj","StreetLamp.png","../code/Objects/street_lamps.objoriented");
+	StreetLamps streetLamps = StreetLamps(textureLoader, networkLoader,test,"streetlamps.obj","StreetLamp.png","../code/Objects/street_lamps.objoriented",&scale,true);
 
 	Material material_clouds = Material(0,0,1,100);
 	CloudsGenerator cloudsGenerator = CloudsGenerator(glm::vec3(0,0,0),glm::vec3(3000,100,3000),glm::vec3(50,20,50),material_clouds);
@@ -151,10 +156,10 @@ int main(void)
 
 		float dist= length(abs(elements[0].get_position()-camera.get_position()));
 		if(dist<500) {
-			elements[0].set_scale(glm::vec3(100,100,100));
+			scale = glm::vec3(100,100,100);
 		}
 		else if(dist>=500) {
-			elements[0].set_scale(max(glm::vec3(450-0.5*dist,450-0.5*dist,450-0.5*dist),glm::vec3(0.f,0.f,0.f)));
+			scale = max(glm::vec3(350-0.5*dist,350-0.5*dist,350-0.5*dist),glm::vec3(0.f,0.f,0.f));
 		}
 
 

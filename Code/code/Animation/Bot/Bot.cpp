@@ -324,9 +324,9 @@ bool Bot::loadModel(tinygltf::Model &model, const char *filename) {
 	return res;
 }
 
-void Bot::initialize(glm::vec3 translation,glm::vec3 scale) {
+void Bot::initialize(glm::vec3 translation,glm::vec3 *scale) {
 	// Modify your path if needed
-	if (!loadModel(model, "../code/Animation/Bot/botWalking.gltf")) {
+	if (!loadModel(model, "../code/Animation/Bot/botRunning.gltf")) {
 		return;
 	}
 
@@ -354,9 +354,8 @@ void Bot::initialize(glm::vec3 translation,glm::vec3 scale) {
 	textureSampler3DID = glGetUniformLocation(programID,"shadows");
 	blockIndex = glGetUniformBlockIndex(programID, "lights");
 	modelMatrixID = glGetUniformLocation(programID, "model");
-	modelMatrix = glm::mat4(1);
-	modelMatrix = glm::translate(modelMatrix,translation);
-	modelMatrix = glm::scale(modelMatrix,scale);
+	_Translation = translation;
+	_Scale = scale;
 }
 
 void Bot::bindMesh(std::vector<PrimitiveObject> &primitiveObjects,
@@ -509,7 +508,9 @@ void Bot::drawModel(const std::vector<PrimitiveObject>& primitiveObjects,
 
 void Bot::render(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights lights) {
 	glUseProgram(programID);
-
+	modelMatrix = glm::mat4(1);
+	modelMatrix = glm::translate(modelMatrix,_Translation);
+	modelMatrix = glm::scale(modelMatrix,*_Scale);
 	// Set camera
 	glm::mat4 mvp = projectionMatrix;
 	glUniformMatrix4fv(mvpMatrixID, 1, GL_FALSE, &mvp[0][0]);

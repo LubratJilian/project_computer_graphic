@@ -14,9 +14,7 @@
 
 class NetworkLoader {
 public:
-    bool loadPositionFile(const char * path, bool oriented, std::vector<glm::mat4>& modelMatrices, std::vector<glm::vec3>& positions);
-private:
-    float convert_angle(float x);
+    bool loadPositionFile(const char * path, bool oriented, std::vector<float>& orientations, std::vector<glm::vec3>& positions);
 };
 
 #endif //NETWORKLOADER_H
