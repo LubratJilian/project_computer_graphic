@@ -14,6 +14,7 @@ out vec2 UV;
 
 uniform mat4 MVP;
 uniform mat4 jointMatrices[25];
+uniform mat4 model;
 
 void main() {
     // Transform vertex
@@ -24,13 +25,13 @@ void main() {
     for (int i = 0; i < 4; i++) { skinnedPosition += a_weight[i] * jointMatrices[int(a_joint[i])]; }
     //skinnedPosition = a_weight.x*jointMatrices[int(a_joint.x)]+a_weight.y*jointMatrices[int(a_joint.y)]+ a_weight.z*jointMatrices[int(a_joint.z)]+ a_weight.w*jointMatrices[int(a_joint.w)];
 
-    gl_Position = MVP * skinnedPosition * vec4(vertexPosition, 1.0);
+    gl_Position = MVP *model* skinnedPosition * vec4(vertexPosition, 1.0);
 
 
     //gl_Position =  MVP * vec4(vertexPosition, 1.0);
 
     // World-space geometry 
-    WorldPosition =  (skinnedPosition * vec4(vertexPosition, 1.0));
+    WorldPosition =  model*(skinnedPosition * vec4(vertexPosition, 1.0));
 
     mat3 skinnedPosition2;
     for (int i = 0; i < 4; i++) { skinnedPosition2 += a_weight[i] * mat3(jointMatrices[int(a_joint[i])]); }

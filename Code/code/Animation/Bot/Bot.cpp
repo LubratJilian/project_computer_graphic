@@ -4,8 +4,6 @@
 #include <../external/tinygltf-2.9.3/tiny_gltf.h>
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
-static glm::vec3 lightIntensity(5e6f, 5e6f, 5e6f);
-static glm::vec3 lightPosition(-275.0f, 500.0f, 800.0f);
 
 glm::mat4 Bot::getNodeTransform(const tinygltf::Node& node) {
 	glm::mat4 transform(1.0f);
@@ -326,9 +324,9 @@ bool Bot::loadModel(tinygltf::Model &model, const char *filename) {
 	return res;
 }
 
-void Bot::initialize() {
+void Bot::initialize(glm::vec3 translation,glm::vec3 scale) {
 	// Modify your path if needed
-	if (!loadModel(model, "../code/Animation/Bot/bot.gltf")) {
+	if (!loadModel(model, "../code/Animation/Bot/botWalking.gltf")) {
 		return;
 	}
 
@@ -355,7 +353,10 @@ void Bot::initialize() {
 	jointMatricesID = glGetUniformLocation(programID, "jointMatrices");
 	textureSampler3DID = glGetUniformLocation(programID,"shadows");
 	blockIndex = glGetUniformBlockIndex(programID, "lights");
-
+	modelMatrixID = glGetUniformLocation(programID, "model");
+	modelMatrix = glm::mat4(1);
+	modelMatrix = glm::translate(modelMatrix,translation);
+	modelMatrix = glm::scale(modelMatrix,scale);
 }
 
 void Bot::bindMesh(std::vector<PrimitiveObject> &primitiveObjects,
@@ -512,6 +513,7 @@ void Bot::render(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights li
 	// Set camera
 	glm::mat4 mvp = projectionMatrix;
 	glUniformMatrix4fv(mvpMatrixID, 1, GL_FALSE, &mvp[0][0]);
+	glUniformMatrix4fv(modelMatrixID, 1, GL_FALSE, &modelMatrix[0][0]);
 
 	// -----------------------------------------------------------------
 	// TODO: Set animation data for linear blend skinning in shader

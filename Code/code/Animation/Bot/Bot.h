@@ -47,7 +47,7 @@ struct AnimationObject {
 
 class Bot{
   public:
-    void initialize();
+    void initialize(glm::vec3 translation,glm::vec3 scale);
     void update(float time);
     void updateSkinning(const std::vector<glm::mat4> &nodeTransforms);
     void updateAnimation(
@@ -93,6 +93,8 @@ class Bot{
     GLuint programID;
     GLuint textureSampler3DID;
     GLuint blockIndex;
+    GLuint modelMatrixID;
+    glm::mat4 modelMatrix;
 
     tinygltf::Model model;
 

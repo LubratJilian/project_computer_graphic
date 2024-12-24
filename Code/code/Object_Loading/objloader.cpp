@@ -113,6 +113,12 @@ Object::Object(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, 
 	initialize(position, scale, textureLoader, nameObj);
 }
 
+Object::Object(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, std::string nameObj, std::string textureName,Material mat,std::string shaderName): material(mat) {
+	textureID = textureLoader.LoadTextureTileBox(("../code/Textures/" + textureName).c_str());
+	colors_activated = false;
+	initialize(position, scale, textureLoader, nameObj,shaderName);
+}
+
 void Object::set_model_matrix(glm::mat4 model) {
 	modelMatrix = model;
 }
@@ -133,6 +139,68 @@ void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textur
 	glBindVertexArray(VertexArrayID);
 
 	programID = LoadShadersFromFile("../code/Object_Loading/ObjectLoading.vert", "../code/Object_Loading/ObjectLoading.frag");
+
+	mvpMatrixID = glGetUniformLocation(programID, "MVP");
+
+
+	textureSamplerID  = glGetUniformLocation(programID, "myTextureSampler");
+
+	textureSampler3DID  = glGetUniformLocation(programID, "shadows");
+
+	ModelID = glGetUniformLocation(programID, "model");
+	CameraPositionID = glGetUniformLocation(programID, "cameraPosition");
+	nbLightID = glGetUniformLocation(programID, "numberLights");
+
+	color_activatedID = glGetUniformLocation(programID, "colorActivated");
+
+	blockIndexLight = glGetUniformBlockIndex(programID, "lights");
+	blockIndexMaterial = glGetUniformBlockIndex(programID, "material");
+
+	if (blockIndexLight == GL_INVALID_INDEX) {
+		std::cerr << "Error: Uniform block 'lights' not found!" << std::endl;
+		return;
+	}
+
+
+	bool res = loadOBJ(("../code/Objects/"+nameObj).c_str());
+	if(!res) {
+		std::cout<<"Error during the object import"<<std::endl;
+	}
+
+	glGenVertexArrays(1, &Vao);
+	glBindVertexArray(Vao);
+
+	glGenBuffers(1, &vertexBufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
+
+	glGenBuffers(1, &uvBufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, uvBufferID);
+	glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
+
+	if(colors_activated) {
+		glGenBuffers(1, &colorBufferID);
+		glBindBuffer(GL_ARRAY_BUFFER, colorBufferID);
+		glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(glm::vec3), &colors[0], GL_STATIC_DRAW);
+	}
+
+	glGenBuffers(1, &normalsID);
+	glBindBuffer(GL_ARRAY_BUFFER, normalsID);
+	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
+	glBindVertexArray(0);
+	}
+
+void Object::initialize(glm::vec3 position, glm::vec3 scale,TextureLoader textureLoader, std::string nameObj,std::string shaderName){
+	_Scale = scale;
+	modelMatrix = glm::mat4(1.);
+	modelMatrix = glm::scale(modelMatrix, _Scale);
+	_Position = position;
+
+	GLuint VertexArrayID;
+	glGenVertexArrays(1, &VertexArrayID);
+	glBindVertexArray(VertexArrayID);
+
+	programID = LoadShadersFromFile(("../code/"+shaderName+"/"+shaderName+".vert").c_str(), ("../code/"+shaderName+"/"+shaderName+".frag").c_str());
 
 	mvpMatrixID = glGetUniformLocation(programID, "MVP");
 
@@ -275,6 +343,101 @@ void Object::render(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 	glBindVertexArray(0);
+}
+
+void Object::prepare(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights lights) {
+	glBindVertexArray(Vao);
+
+	glUseProgram(programID);
+
+
+
+	glUniformMatrix4fv(mvpMatrixID, 1, GL_FALSE, &projectionMatrix[0][0]);
+
+	glUniformMatrix4fv(ModelID, 1, GL_FALSE, &modelMatrix[0][0]);
+
+	glUniform3fv(CameraPositionID, 1, &cameraPosition[0]);
+
+	glUniform1i(nbLightID, lights.get_lights().size());
+
+	glUniform1i(color_activatedID, colors_activated);
+
+
+
+	if(!colors_activated) {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glUniform1i(textureSamplerID, 0);
+	}
+
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, lights.get_shadows());
+	glUniform1i(textureSampler3DID, 1);
+
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+	glVertexAttribPointer(
+		0,                  // attribute
+		3,                  // size
+		GL_FLOAT,           // type
+		GL_FALSE,           // normalized?
+		0,                  // stride
+		(void*)0            // array buffer offset
+	);
+
+	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, uvBufferID);
+	glVertexAttribPointer(
+		1,                                // attribute
+		2,                                // size
+		GL_FLOAT,                         // type
+		GL_FALSE,                         // normalized?
+		0,                                // stride
+		(void*)0                          // array buffer offset
+	);
+
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, normalsID);
+	glVertexAttribPointer(
+		2,                                // attribute
+		3,                                // size
+		GL_FLOAT,                         // type
+		GL_FALSE,                         // normalized?
+		0,                                // stride
+		(void*)0                          // array buffer offset
+	);
+
+	if(colors_activated) {
+		glEnableVertexAttribArray(3);
+		glBindBuffer(GL_ARRAY_BUFFER, colorBufferID);
+		glVertexAttribPointer(
+			3,                                // attribute
+			3,                                // size
+			GL_FLOAT,                         // type
+			GL_FALSE,                         // normalized?
+			0,                                // stride
+			(void*)0                          // array buffer offset
+		);
+	}
+
+	glBindBuffer(GL_UNIFORM_BUFFER, lights.get_UBO());
+	glUniformBlockBinding(programID, blockIndexLight, 0);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, lights.get_UBO());
+
+
+	glBindBuffer(GL_UNIFORM_BUFFER, material.get_UBO());
+	glUniformBlockBinding(programID, blockIndexMaterial, 1);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 1, material.get_UBO());
+
+	GLenum error = glGetError();
+	if(error != 0) {
+		std::cout<<error<<std::endl;
+	}
+}
+
+int  Object::getSize() {
+	return vertices.size();
 }
 
 glm::vec3 Object::get_position() {

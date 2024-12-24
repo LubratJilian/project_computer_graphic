@@ -278,10 +278,6 @@ void CloudsGenerator::renderClouds(glm::mat4 projectionMatrix, glm::vec3 cameraP
 		(void*)0           // element array buffer offset
 	);
 
-	GLenum error = glGetError();
-	if(error != 0) {
-		std::cout<<"Error"<<error<<std::endl;
-	}
 	glDepthMask(GL_TRUE);
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);

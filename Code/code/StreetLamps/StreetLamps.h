@@ -17,13 +17,15 @@
 
 class StreetLamps{
   public:
-    StreetLamps(TextureLoader textureLoader,NetworkLoader networkLoader, Material mat);
+    StreetLamps(TextureLoader textureLoader, NetworkLoader networkLoader, Material mat, std::string pathObject, std::string pathTexture,std::string position_path);
     void render(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights lights);
 
   private:
     std::vector<glm::vec3> positions;
     Object streetLamps;
     std::vector<glm::mat4> model_matrices;
+  GLuint VBO;
+  GLuint VAO;
 
 };
 

@@ -129,7 +129,7 @@ int main(void)
 
 
 	Bot bot;
-	bot.initialize();
+	bot.initialize(glm::vec3(0,500,0),glm::vec3(1,1,1));
 
 	Light l1= Light(glm::vec3(300,300,300),glm::vec3(1.,0.7,0.7),1000000,60,10,1000,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
 	Light l2= Light(glm::vec3(300,300,-300),glm::vec3(1.,0.7,0.7),100000,60,10,1000,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
@@ -139,7 +139,7 @@ int main(void)
 	Lights lights = Lights(Screen_sizeX,Screen_sizeY,{l1,l2,l3,l4,l5});
 	lights.put_data_buffer();
 
-	StreetLamps streetLamps = StreetLamps(textureLoader, networkLoader,test);
+	StreetLamps streetLamps = StreetLamps(textureLoader, networkLoader,test,"streetlamps.obj","StreetLamp.png","../code/Objects/street_lamps.objoriented");
 
 	Material material_clouds = Material(0,0,1,100);
 	CloudsGenerator cloudsGenerator = CloudsGenerator(glm::vec3(0,0,0),glm::vec3(3000,100,3000),glm::vec3(50,20,50),material_clouds);
