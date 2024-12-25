@@ -30,6 +30,9 @@ static 	bool firstMouse = true;
 int ScreenSizeX;
 int ScreenSizeY;
 
+
+
+
 float xpos;
 float ypos;
 float lastX;
@@ -53,6 +56,7 @@ SkyBox skybox;
 TextureLoader textureLoader;
 NetworkLoader networkLoader;
 glm::vec3 scale = glm::vec3(100,100,100);
+glm::vec3 scaleBis = scale;
 
 int main(void)
 {
@@ -134,7 +138,9 @@ int main(void)
 
 
 	Bot bot;
-	bot.initialize(glm::vec3(0,500,0),&scale);
+	glm::vec3 scale_bot = glm::vec3(0.07,0.07,0.07);
+	bot.initialize(glm::vec3(-20,169,45),&scale_bot);
+
 
 	Light l1= Light(glm::vec3(300,300,300),glm::vec3(1.,0.7,0.7),1000000,60,10,1000,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
 	Light l2= Light(glm::vec3(300,300,-300),glm::vec3(1.,0.7,0.7),100000,60,10,1000,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
@@ -144,7 +150,14 @@ int main(void)
 	Lights lights = Lights(Screen_sizeX,Screen_sizeY,{l1,l2,l3,l4,l5});
 	lights.put_data_buffer();
 
-	StreetLamps streetLamps = StreetLamps(textureLoader, networkLoader,test,"streetlamps.obj","StreetLamp.png","../code/Objects/street_lamps.objoriented",&scale,true);
+	Object streetLamp = Object(glm::vec3(0,0,0),&scale,textureLoader,"streetlamps.obj","StreetLamp.png",test,"StreetLamps");
+	StreetLamps streetLamps = StreetLamps(networkLoader,"../code/Objects/street_lamps.objoriented",true, &streetLamp);
+
+	std::map<std::string,glm::vec3> treeColors;
+	treeColors.insert({"Bark", glm::vec3(0.207595, 0.138513, 0.055181)});
+	treeColors.insert({"Tree", glm::vec3(0.256861, 0.440506, 0.110769)});
+	Object tree = Object(glm::vec3(0,0,0),&scale,textureLoader,"tree.obj", treeColors,test,"StreetLamps");
+	StreetLamps trees = StreetLamps(networkLoader,"../code/Objects/trees.objoriented",true, &tree);
 
 	Material material_clouds = Material(0,0,1,100);
 	CloudsGenerator cloudsGenerator = CloudsGenerator(glm::vec3(0,0,0),glm::vec3(3000,100,3000),glm::vec3(50,20,50),material_clouds);
@@ -154,19 +167,38 @@ int main(void)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// Render the SkyBox
 
-		float dist= length(abs(elements[0].get_position()-camera.get_position()));
-		if(dist<500) {
-			scale = glm::vec3(100,100,100);
-		}
-		else if(dist>=500) {
-			scale = max(glm::vec3(350-0.5*dist,350-0.5*dist,350-0.5*dist),glm::vec3(0.f,0.f,0.f));
-		}
-
-
 		float currentTime = glfwGetTime();
 		deltaTime = currentTime - lastTime;
 		lastTime = currentTime;
-		camera.set_speed(100.f*deltaTime);
+
+
+		float dist= length(abs(elements[0].get_position()-camera.get_position()));
+		if(dist<500) {
+			scale = glm::vec3(100,100,100);
+			//std::cout<<length(abs(elements[0].get_position()-camera.get_position()))<<" "<<camera.get_position().x<<" "<<camera.get_position().y<<" "<<camera.get_position().z<<std::endl;
+			if(dist<250) {
+				camera.set_speed(10.f*deltaTime);
+				camera.set_FoV(20);
+			}
+			if(dist>=250) {
+				camera.set_speed(((65./250.)*dist -55)*deltaTime);
+				camera.set_FoV(((FoV-20)/250) * dist + 40 - FoV);
+			}
+		}
+		else if(dist>=500) {
+			scale = max(glm::vec3(350-0.5*dist,350-0.5*dist,350-0.5*dist),glm::vec3(0.f,0.f,0.f));
+			camera.set_speed(100.f*deltaTime);
+			//std::cout<<length(abs(elements[0].get_position()-camera.get_position()))<<std::endl;
+			if(dist<700) {
+				camera.set_speed(((-55./200.)*dist +65+(55./200.)*500)*deltaTime);
+			}
+			if(dist>=700) {
+				camera.set_speed(10.f*deltaTime);
+			}
+		}
+
+
+
 
 		frames++;
 		fTime += deltaTime;
@@ -189,11 +221,12 @@ int main(void)
 		for(Light& light : lights.get_lights()) {
 			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, lights.get_shadows(), 0, i);
 			glClear(GL_DEPTH_BUFFER_BIT);
-			//bot.render(light.get_lightVP(glm::vec3(0,0,0),glm::vec3(0,1,0)));
 			for(Object &o : elements) {
 				o.render(light.get_lightVP(light.get_LookAt(),light.get_Up()),camera.get_position(),lights);
 			}
-			streetLamps.render(light.get_lightVP(glm::cross(light.get_Up(),glm::cross(light.get_Up(),light.get_LookAt())),light.get_Up()),camera.get_position(),lights);
+			bot.render(light.get_lightVP(light.get_LookAt(),light.get_Up()),camera.get_position(),lights,false);
+			streetLamps.render(light.get_lightVP(light.get_LookAt(),light.get_Up()),camera.get_position(),lights);
+			trees.render(light.get_lightVP(light.get_LookAt(),light.get_Up()),camera.get_position(),lights);
 			i++;
 			switch(light.get_type()) {
 				case SUN:
@@ -203,7 +236,9 @@ int main(void)
 						o.render(light.get_lightVP(glm::cross(light.get_Up(),glm::cross(light.get_Up(),light.get_LookAt())),light.get_Up()),camera.get_position(),lights);
 					}
 					streetLamps.render(light.get_lightVP(glm::cross(light.get_Up(),glm::cross(light.get_Up(),light.get_LookAt())),light.get_Up()),camera.get_position(),lights);
-					//bot.render(light.get_lightVP(glm::vec3(500,500,500),glm::vec3(0,1,0)));
+					trees.render(light.get_lightVP(glm::cross(light.get_Up(),glm::cross(light.get_Up(),light.get_LookAt())),light.get_Up()),camera.get_position(),lights);
+					bot.render(light.get_lightVP(glm::cross(light.get_Up(),glm::cross(light.get_Up(),light.get_LookAt())),light.get_Up()),camera.get_position(),lights,false);
+
 					i++;
 					break;
 			}
@@ -212,11 +247,12 @@ int main(void)
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
 		glViewport(0,0,Screen_sizeX,Screen_sizeY);
 
-		bot.render(camera.get_MVP(),camera.get_position(),lights);
 		for(Object &o : elements) {
 			o.render(camera.get_MVP(),camera.get_position(),lights);
 		}
+		bot.render(camera.get_MVP(),camera.get_position(),lights,false);
 		streetLamps.render(camera.get_MVP(),camera.get_position(),lights);
+		trees.render(camera.get_MVP(),camera.get_position(),lights);
 		skybox.render(camera.get_MVP());
 		cloudsGenerator.renderClouds(camera.get_MVP(),camera.get_position(),lights);
 

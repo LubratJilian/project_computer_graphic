@@ -24,6 +24,7 @@ public:
 	void initialize(glm::vec3 position, glm::vec3 *scale,TextureLoader textureLoader, std::string nameObj,std::string shaderName);
 	void render(glm::mat4 cameraMatrix, glm::vec3 cameraPosition, Lights lights);
 	void initialize(glm::vec3 position, glm::vec3 *scale,TextureLoader textureLoader, std::string nameObj);
+	Object(glm::vec3 position, glm::vec3 *scale,TextureLoader textureLoader, std::string nameObj, std::map<std::string,glm::vec3> colors,Material mat,std::string shaderName);
 	glm::vec3 get_position();
 	void set_scale(glm::vec3 *scale);
 	void cleanup();

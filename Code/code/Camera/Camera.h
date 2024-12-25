@@ -13,6 +13,7 @@ class Camera{
     void set_azimuth(float azimuth);
     void set_polar(float polar);
     void set_position(glm::vec3 position);
+    void set_FoV(float fov);
     void set_up(glm::vec3 up);
     void set_speed(float cameraMovementSpeed);
     void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);

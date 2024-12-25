@@ -326,7 +326,7 @@ bool Bot::loadModel(tinygltf::Model &model, const char *filename) {
 
 void Bot::initialize(glm::vec3 translation,glm::vec3 *scale) {
 	// Modify your path if needed
-	if (!loadModel(model, "../code/Animation/Bot/botRunning.gltf")) {
+	if (!loadModel(model, "../code/Animation/Bot/bot.gltf")) {
 		return;
 	}
 
@@ -463,7 +463,7 @@ std::vector<PrimitiveObject> Bot::bindModel(tinygltf::Model &model) {
 }
 
 void Bot::drawMesh(const std::vector<PrimitiveObject> &primitiveObjects,
-			tinygltf::Model &model, tinygltf::Mesh &mesh) {
+			tinygltf::Model &model, tinygltf::Mesh &mesh, bool prepare) {
 
 	for (size_t i = 0; i < mesh.primitives.size(); ++i)
 	{
@@ -477,36 +477,39 @@ void Bot::drawMesh(const std::vector<PrimitiveObject> &primitiveObjects,
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbos.at(indexAccessor.bufferView));
 
-		glDrawElements(primitive.mode, indexAccessor.count,
-					indexAccessor.componentType,
-					BUFFER_OFFSET(indexAccessor.byteOffset));
+		if(!prepare) {
+			glDrawElements(primitive.mode, indexAccessor.count,
+			indexAccessor.componentType,
+			BUFFER_OFFSET(indexAccessor.byteOffset));
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glBindVertexArray(0);
+		}
+
 	}
 }
 
 void Bot::drawModelNodes(const std::vector<PrimitiveObject>& primitiveObjects,
-					tinygltf::Model &model, tinygltf::Node &node) {
+					tinygltf::Model &model, tinygltf::Node &node,bool prepare) {
 	// Draw the mesh at the node, and recursively do so for children nodes
 	if ((node.mesh >= 0) && (node.mesh < model.meshes.size())) {
-		drawMesh(primitiveObjects, model, model.meshes[node.mesh]);
+		drawMesh(primitiveObjects, model, model.meshes[node.mesh],prepare);
 	}
 	for (size_t i = 0; i < node.children.size(); i++) {
-		drawModelNodes(primitiveObjects, model, model.nodes[node.children[i]]);
+		drawModelNodes(primitiveObjects, model, model.nodes[node.children[i]],prepare);
 	}
 }
 void Bot::drawModel(const std::vector<PrimitiveObject>& primitiveObjects,
-			tinygltf::Model &model) {
+			tinygltf::Model &model,bool prepare) {
 	// Draw all nodes
 	const tinygltf::Scene &scene = model.scenes[model.defaultScene];
 	for (size_t i = 0; i < scene.nodes.size(); ++i) {
-		drawModelNodes(primitiveObjects, model, model.nodes[scene.nodes[i]]);
+		drawModelNodes(primitiveObjects, model, model.nodes[scene.nodes[i]],prepare);
 	}
 }
 
-void Bot::render(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights lights) {
+void Bot::render(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights lights,bool prepare) {
 	glUseProgram(programID);
 	modelMatrix = glm::mat4(1);
 	modelMatrix = glm::translate(modelMatrix,_Translation);
@@ -538,10 +541,13 @@ void Bot::render(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights li
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, lights.get_UBO());
 
 	// Draw the GLTF model
-	drawModel(primitiveObjects, model);
+	drawModel(primitiveObjects, model,prepare);
 }
 
 void Bot::cleanup() {
 	glDeleteProgram(programID);
 }
 
+glm::vec3 Bot::get_scale() {
+	return *_Scale;
+}

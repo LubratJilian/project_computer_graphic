@@ -78,11 +78,12 @@ class Bot{
                     tinygltf::Model &model,
                     tinygltf::Node &node);
     std::vector<PrimitiveObject> bindModel(tinygltf::Model &model);
-    void drawMesh(const std::vector<PrimitiveObject> &primitiveObjects,tinygltf::Model &model, tinygltf::Mesh &mesh);
-    void drawModelNodes(const std::vector<PrimitiveObject>& primitiveObjects,tinygltf::Model &model, tinygltf::Node &node);
-    void drawModel(const std::vector<PrimitiveObject>& primitiveObjects,			tinygltf::Model &model);
-    void render(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights lights);
+    void drawMesh(const std::vector<PrimitiveObject> &primitiveObjects,tinygltf::Model &model, tinygltf::Mesh &mesh,bool prepare);
+    void drawModelNodes(const std::vector<PrimitiveObject>& primitiveObjects,tinygltf::Model &model, tinygltf::Node &node,bool prepare);
+    void drawModel(const std::vector<PrimitiveObject>& primitiveObjects,			tinygltf::Model &model,bool prepare);
+    void render(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights lights,bool prepare);
     void cleanup();
+    glm::vec3 get_scale();
 
     private:
 

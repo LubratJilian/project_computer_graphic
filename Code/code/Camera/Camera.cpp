@@ -101,3 +101,7 @@ void Camera::mouse_callback(GLFWwindow* window, double xoffset, double yoffset)
 	calculate_vector();
 }
 
+void Camera::set_FoV(float fov) {
+	_FoV = fov;
+}
+

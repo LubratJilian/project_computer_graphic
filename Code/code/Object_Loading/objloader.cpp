@@ -107,6 +107,12 @@ Object::Object(glm::vec3 position, glm::vec3 *scale,TextureLoader textureLoader,
 	initialize(position, scale,textureLoader, nameObj);
 }
 
+Object::Object(glm::vec3 position, glm::vec3 *scale,TextureLoader textureLoader, std::string nameObj, std::map<std::string,glm::vec3> colors,Material mat,std::string shaderName): material(mat) {
+	Colors = colors;
+	colors_activated = true;
+	initialize(position, scale,textureLoader, nameObj,shaderName);
+}
+
 Object::Object(glm::vec3 position, glm::vec3 *scale,TextureLoader textureLoader, std::string nameObj, std::string textureName,Material mat): material(mat) {
 	textureID = textureLoader.LoadTextureTileBox(("../code/Textures/" + textureName).c_str());
 	colors_activated = false;
