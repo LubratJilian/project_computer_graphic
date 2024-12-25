@@ -76,7 +76,7 @@ void PerlinNoiseGenerator::generatePermutation() {
     this->perm = perm;
 }
 
-void PerlinNoiseGenerator::generateTexture(glm::vec3 position, float scale, glm::vec3 numbers, GLuint texture) {
+void PerlinNoiseGenerator::generateTexture(glm::vec3 position, float scale, glm::vec3 numbers, GLuint texture,float step) {
     float offsetX = (Position.x - position.x/numbers.x);
     float offsetZ = (Position.z - position.z/numbers.z);
 
@@ -93,12 +93,14 @@ void PerlinNoiseGenerator::generateTexture(glm::vec3 position, float scale, glm:
 				float fy = posy / scale;
 				float fz = posz / scale;
 
-				float noiseValue = perlinNoise3D(fx-offsetX/scale, fy,fz-offsetZ/scale); // Or use 3D Perlin noise if needed
+				float noiseValue = perlinNoise3D(fx-offsetX/(scale-step), fy,fz-offsetZ/(scale-step)); // Or use 3D Perlin noise if needed
 
 				noiseData[y * numbers.x * numbers.z + z * numbers.x + x] = noiseValue;///numbers.y;
 			}
 		}
 	}
+
+	std::cout<<scale<<" "<<step<<std::endl;
 
     glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
     glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, numbers.x, numbers.z,numbers.y, GL_RED, GL_FLOAT, noiseData.data());
@@ -240,9 +242,9 @@ CloudsGenerator::CloudsGenerator(glm::vec3 position,glm::vec3 size, glm::vec3 nu
 	//generator.generateTexture(glm::vec3(300,300,300),500,numbersElements, texture);
 }
 
-void CloudsGenerator::renderClouds(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights lights) {
+void CloudsGenerator::renderClouds(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights lights, float step) {
 	glDepthMask(GL_FALSE);
-	generator.generateTexture(cameraPosition,1000,numbersElements, texture);
+	generator.generateTexture(cameraPosition,1000,numbersElements, texture,step);
 
 	std::vector<GLuint> ids = grid.get_Ids();
 

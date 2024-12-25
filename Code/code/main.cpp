@@ -43,8 +43,8 @@ float one_third = 1./3.;
 float two_third = 2./3.;
 
 // View control
-static float viewAzimuth = 0.f;
-static float viewPolar = 0.f;
+static float viewAzimuth = 3.f;
+static float viewPolar = -0.3f;
 static glm::vec3 eye_center = glm::vec3(300,300,0);
 static float cameraMovementSpeed = 0.f;
 glm::float32 FoV = 60;
@@ -56,7 +56,7 @@ SkyBox skybox;
 TextureLoader textureLoader;
 NetworkLoader networkLoader;
 glm::vec3 scale = glm::vec3(100,100,100);
-glm::vec3 scaleBis = scale;
+float step = 0;
 
 int main(void)
 {
@@ -175,7 +175,7 @@ int main(void)
 		float dist= length(abs(elements[0].get_position()-camera.get_position()));
 		if(dist<500) {
 			scale = glm::vec3(100,100,100);
-			//std::cout<<length(abs(elements[0].get_position()-camera.get_position()))<<" "<<camera.get_position().x<<" "<<camera.get_position().y<<" "<<camera.get_position().z<<std::endl;
+			scale_bot = glm::vec3(0.07,0.07,0.07);
 			if(dist<250) {
 				camera.set_speed(10.f*deltaTime);
 				camera.set_FoV(20);
@@ -186,9 +186,11 @@ int main(void)
 			}
 		}
 		else if(dist>=500) {
+			scale_bot = max(glm::vec3((-0.07/200)*dist+0.07+(0.07/200)*500,(-0.07/200)*dist+0.07+(0.07/200)*500,(-0.07/200)*dist+0.07+(0.07/200)*500),glm::vec3(0.f,0.f,0.f));
 			scale = max(glm::vec3(350-0.5*dist,350-0.5*dist,350-0.5*dist),glm::vec3(0.f,0.f,0.f));
 			camera.set_speed(100.f*deltaTime);
-			//std::cout<<length(abs(elements[0].get_position()-camera.get_position()))<<std::endl;
+			step = 9.995*(100-scale.x);
+			std::cout<<step<<std::endl;
 			if(dist<700) {
 				camera.set_speed(((-55./200.)*dist +65+(55./200.)*500)*deltaTime);
 			}
@@ -254,7 +256,7 @@ int main(void)
 		streetLamps.render(camera.get_MVP(),camera.get_position(),lights);
 		trees.render(camera.get_MVP(),camera.get_position(),lights);
 		skybox.render(camera.get_MVP());
-		cloudsGenerator.renderClouds(camera.get_MVP(),camera.get_position(),lights);
+		cloudsGenerator.renderClouds(camera.get_MVP(),camera.get_position(),lights,step);
 
 
 		// Swap buffers

@@ -16,7 +16,7 @@
 class PerlinNoiseGenerator{
 public:
     PerlinNoiseGenerator(glm::vec3 position,glm::vec3 size);
-    void generateTexture(glm::vec3 position, float scale, glm::vec3 numbers, GLuint texture);
+    void generateTexture(glm::vec3 position, float scale, glm::vec3 numbers, GLuint texture,float step);
     glm::vec3 get_size();
     glm::vec3 get_position();
 
@@ -57,7 +57,7 @@ private:
 class CloudsGenerator {
 public :
     CloudsGenerator(glm::vec3 position,glm::vec3 size, glm::vec3 numbers, Material mat);
-    void renderClouds(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights lights);
+    void renderClouds(glm::mat4 projectionMatrix, glm::vec3 cameraPosition, Lights lights, float step);
 
 private :
     PerlinNoiseGenerator generator;
