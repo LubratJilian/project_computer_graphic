@@ -114,7 +114,6 @@ int main(void)
 
 	skybox.initialize(camera.get_position(), glm::vec3(3000, 3000, 3000),textureLoader);
 
-	Material test = Material(1,1,1,100);
 
 	std::vector<Object> elements;
 	Material material_main_part = Material(0.5,0,1,100);
@@ -150,13 +149,17 @@ int main(void)
 	Lights lights = Lights(Screen_sizeX,Screen_sizeY,{l1,l2,l3,l4,l5});
 	lights.put_data_buffer();
 
-	Object streetLamp = Object(glm::vec3(0,0,0),&scale,textureLoader,"streetlamps.obj","StreetLamp.png",test,"StreetLamps");
+	Material StreetLamp = Material(1,1,1,1);
+
+	Object streetLamp = Object(glm::vec3(0,0,0),&scale,textureLoader,"streetlamps.obj","StreetLamp.png",StreetLamp,"StreetLamps");
 	StreetLamps streetLamps = StreetLamps(networkLoader,"../code/Objects/street_lamps.objoriented",true, &streetLamp);
 
 	std::map<std::string,glm::vec3> treeColors;
 	treeColors.insert({"Bark", glm::vec3(0.207595, 0.138513, 0.055181)});
 	treeColors.insert({"Tree", glm::vec3(0.256861, 0.440506, 0.110769)});
-	Object tree = Object(glm::vec3(0,0,0),&scale,textureLoader,"tree.obj", treeColors,test,"StreetLamps");
+
+	Material StreetTree = Material(1,1,1,1);
+	Object tree = Object(glm::vec3(0,0,0),&scale,textureLoader,"tree.obj", treeColors,StreetTree,"StreetLamps");
 	StreetLamps trees = StreetLamps(networkLoader,"../code/Objects/trees.objoriented",true, &tree);
 
 	Material material_clouds = Material(0,0,1,100);
@@ -190,7 +193,7 @@ int main(void)
 			scale = max(glm::vec3(350-0.5*dist,350-0.5*dist,350-0.5*dist),glm::vec3(0.f,0.f,0.f));
 			camera.set_speed(100.f*deltaTime);
 			step = 9.995*(100-scale.x);
-			std::cout<<step<<std::endl;
+			//std::cout<<step<<std::endl;
 			if(dist<700) {
 				camera.set_speed(((-55./200.)*dist +65+(55./200.)*500)*deltaTime);
 			}

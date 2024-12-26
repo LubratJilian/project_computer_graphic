@@ -17,18 +17,14 @@ float PerlinNoiseGenerator::lerp(float t, float a, float b) {
 }
 
 float PerlinNoiseGenerator::grad(int hash, float x, float y, float z) {
-    // Use the hash to pick one of the 12 gradient directions
-    int h = hash & 15;  // Take the lowest 4 bits of the hash
-    float u = h < 8 ? x : y;  // If the hash is less than 8, use x; otherwise, use y
-    float v = h < 4 ? y : (h == 12 || h == 14 ? x : z);  // Choose between y or z (or x again)
+    int h = hash & 15;
+    float u = h < 8 ? x : y;
+    float v = h < 4 ? y : (h == 12 || h == 14 ? x : z);
 
-    // Return the dot product
     return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
 }
 
-// Perlin noise function
 float PerlinNoiseGenerator::perlinNoise3D(float x, float y, float z) {
-    // Similar to 2D Perlin noise but extended for 3D
     int X = static_cast<int>(std::floor(x)) & 255;
     int Y = static_cast<int>(std::floor(y)) & 255;
     int Z = static_cast<int>(std::floor(z)) & 255;
@@ -62,13 +58,11 @@ float PerlinNoiseGenerator::perlinNoise3D(float x, float y, float z) {
     return glm::clamp(lerp(w, y1, y2),0.f,1.f);// + 1.0f) / 2.0f;
 }
 
-// Generate permutation table
 void PerlinNoiseGenerator::generatePermutation() {
     std::vector<int> perm(512);
     std::vector<int> p(256);
     for (int i = 0; i < 256; ++i) p[i] = i;
 
-    // Shuffle the permutation table
     std::random_shuffle(p.begin(), p.end());
 
     for (int i = 0; i < 512; ++i) perm[i] = p[i % 256];
@@ -100,7 +94,7 @@ void PerlinNoiseGenerator::generateTexture(glm::vec3 position, float scale, glm:
 		}
 	}
 
-	std::cout<<scale<<" "<<step<<std::endl;
+	//std::cout<<scale<<" "<<step<<std::endl;
 
     glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
     glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, numbers.x, numbers.z,numbers.y, GL_RED, GL_FLOAT, noiseData.data());
@@ -144,23 +138,20 @@ Grid::Grid(glm::vec3 size,glm::vec3 numbers) {
 		}
 	}
 
-	// Create a vertex array object
+
 	glGenVertexArrays(1, &vertexArrayID);
 	glBindVertexArray(vertexArrayID);
 
-	// Create a vertex buffer object to store the vertex data
+
 	glGenBuffers(1, &vertexBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
 
-	// --------------------------------------------------------
-	// Create a vertex buffer object to store the UV data
+
 	glGenBuffers(1, &uvBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, uvBufferID);
 	glBufferData(GL_ARRAY_BUFFER, uv.size() * sizeof(glm::vec3), &uv[0],GL_STATIC_DRAW);
-	// --------------------------------------------------------
 
-	// Create an index buffer object to store the index data that defines triangle faces
 	glGenBuffers(1, &indexBufferID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(glm::vec3), &indices[0], GL_STATIC_DRAW);
