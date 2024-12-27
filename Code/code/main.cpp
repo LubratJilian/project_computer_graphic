@@ -30,9 +30,6 @@ static 	bool firstMouse = true;
 int ScreenSizeX;
 int ScreenSizeY;
 
-
-
-
 float xpos;
 float ypos;
 float lastX;
@@ -57,6 +54,9 @@ TextureLoader textureLoader;
 NetworkLoader networkLoader;
 glm::vec3 scale = glm::vec3(100,100,100);
 float step = 0;
+bool enable_mouse = true;
+bool key_already_press = false;
+int count = -1;
 
 int main(void)
 {
@@ -118,7 +118,7 @@ int main(void)
 	std::vector<Object> elements;
 	Material material_main_part = Material(0.5,0,1,100);
 	Object main_part = Object(glm::vec3(0.,0.,0.), &scale,textureLoader,"main_part.obj","Rocks.jpg",material_main_part); //glm::vec3(150, 150, 150)
-	Material material_crystal = Material(1,1,0.5,1);
+	Material material_crystal = Material(0,1,0.2,0.5);
 	Object crystals = Object(glm::vec3(0.,0.,0.), &scale,textureLoader,"crystals.obj","Crystals.png",material_crystal); //glm::vec3(150, 150, 150)
 	Material material_road = Material(0.5,0.5,1,1);
 	Object road = Object(glm::vec3(0.,0.,0.), &scale,textureLoader,"road.obj","Road.jpg",material_road); //glm::vec3(150, 150, 150)
@@ -146,7 +146,7 @@ int main(void)
 	Light l3= Light(glm::vec3(-300,300,300),glm::vec3(1.,0.7,0.7),100000,60,200,800,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
 	Light l4= Light(glm::vec3(-300,300,-300),glm::vec3(1.,0.7,0.7),100000,60,200,800,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
 	Light l5= Light(glm::vec3(0,300,0),glm::vec3(1.,0.7,0.7),100000,60,200,800,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
-	Lights lights = Lights(Screen_sizeX,Screen_sizeY,{l1,l2,l3,l4,l5});
+	Lights lights = Lights(Screen_sizeX,Screen_sizeY,{l1});//,l2,l3,l4,l5});
 	lights.put_data_buffer();
 
 	Material StreetLamp = Material(1,1,1,1);
@@ -158,8 +158,8 @@ int main(void)
 	treeColors.insert({"Bark", glm::vec3(0.207595, 0.138513, 0.055181)});
 	treeColors.insert({"Tree", glm::vec3(0.256861, 0.440506, 0.110769)});
 
-	Material StreetTree = Material(1,1,1,1);
-	Object tree = Object(glm::vec3(0,0,0),&scale,textureLoader,"tree.obj", treeColors,StreetTree,"StreetLamps");
+	Material MaterialTree = Material(1,1,1,1);
+	Object tree = Object(glm::vec3(0,0,0),&scale,textureLoader,"tree.obj", treeColors,MaterialTree,"StreetLamps");
 	StreetLamps trees = StreetLamps(networkLoader,"../code/Objects/trees.objoriented",true, &tree);
 
 	Material material_clouds = Material(0,0,1,100);
@@ -202,9 +202,6 @@ int main(void)
 			}
 		}
 
-
-
-
 		frames++;
 		fTime += deltaTime;
 		if (fTime > 2.0f) {
@@ -233,7 +230,7 @@ int main(void)
 			streetLamps.render(light.get_lightVP(light.get_LookAt(),light.get_Up()),camera.get_position(),lights);
 			trees.render(light.get_lightVP(light.get_LookAt(),light.get_Up()),camera.get_position(),lights);
 			i++;
-			switch(light.get_type()) {
+			/*switch(light.get_type()) {
 				case SUN:
 					glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, lights.get_shadows(), 0, i);
 					glClear(GL_DEPTH_BUFFER_BIT);
@@ -246,7 +243,7 @@ int main(void)
 
 					i++;
 					break;
-			}
+			}*/
 		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
@@ -282,25 +279,37 @@ int main(void)
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-	if (firstMouse)
-	{
+	if(enable_mouse) {
+		if (firstMouse)
+		{
+			lastX = xpos;
+			lastY = ypos;
+			firstMouse = false;
+		}
+		float xoffset = xpos - lastX;
+		float yoffset = lastY - ypos;
 		lastX = xpos;
 		lastY = ypos;
-		firstMouse = false;
+		float sensitivityX = 0.001;
+		float sensitivityY = 0.001;
+		xoffset *= sensitivityX;
+		yoffset *= sensitivityY;
+		camera.mouse_callback(window, xoffset, yoffset);
 	}
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos;
-	lastX = xpos;
-	lastY = ypos;
-	float sensitivityX = 0.001;
-	float sensitivityY = 0.001;
-	xoffset *= sensitivityX;
-	yoffset *= sensitivityY;
-	camera.mouse_callback(window, xoffset, yoffset);
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
 {
+	count ++;
+	if (key == GLFW_KEY_V && glfwGetKey(window,GLFW_KEY_V) == GLFW_PRESS && count%2 == 0) {
+		if(enable_mouse) {
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
+		else if(!enable_mouse) {
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		}
+		enable_mouse = !enable_mouse;
+	}
 	//std::cout<<cameraMovementSpeed<<std::endl;
 	if (key == GLFW_KEY_R && glfwGetKey(window,GLFW_KEY_R) == GLFW_PRESS) {
 		std::cout << "Reset." << std::endl;
