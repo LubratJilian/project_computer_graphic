@@ -146,7 +146,7 @@ int main(void)
 	Light l3= Light(glm::vec3(-300,300,300),glm::vec3(1.,0.7,0.7),100000,60,200,800,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
 	Light l4= Light(glm::vec3(-300,300,-300),glm::vec3(1.,0.7,0.7),100000,60,200,800,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
 	Light l5= Light(glm::vec3(0,300,0),glm::vec3(1.,0.7,0.7),100000,60,200,800,glm::vec3(0,0,0),glm::vec3(0,1,0),SUN);
-	Lights lights = Lights(Screen_sizeX,Screen_sizeY,{l1});//,l2,l3,l4,l5});
+	Lights lights = Lights(Screen_sizeX,Screen_sizeY,{l1,l2,l3,l4,l5});
 	lights.put_data_buffer();
 
 	Material StreetLamp = Material(1,1,1,1);
